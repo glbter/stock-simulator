@@ -1,0 +1,6 @@
+-- http://api.worldbank.org/v2/country/usa/indicator/FP.CPI.TOTL.ZG?format=json
+-- http://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?format=json
+
+--     FP.CPI.TOTL.ZG - inflation % annual
+-- NY.GDP.MKTP.KD.ZG -% GDP growth annual
+-- NY.GDP.MKTP.CD = GDP
