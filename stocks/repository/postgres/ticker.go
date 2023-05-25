@@ -12,8 +12,7 @@ func NewTickerRepository() TickerRepository {
 	return TickerRepository{}
 }
 
-type TickerRepository struct {
-}
+type TickerRepository struct{}
 
 var _ stocks.TickerRepository = &TickerRepository{}
 
@@ -166,15 +165,15 @@ func (TickerRepository) QueryLatestDaily(ctx context.Context, s sqlc.Selector, f
 
 	sb := sqlbuilder.NewSelectBuilder()
 	sb.Select(
-		"ticker.id",
+		"ticker.id as ticker_id",
 		"ticker.name",
 		"coalesce(ticker.description, '')",
-		"sd.date",
-		"coalesce(sd.high, 0)",
-		"coalesce(sd.low, 0)",
-		"coalesce(sd.open, 0)",
-		"coalesce(sd.close, 0)",
-		"coalesce(sd.volume, 0)",
+		"stock_daily.date",
+		"coalesce(stock_daily.high, 0)",
+		"coalesce(stock_daily.low, 0)",
+		"coalesce(stock_daily.open, 0)",
+		"coalesce(stock_daily.close, 0)",
+		"coalesce(stock_daily.volume, 0)",
 	).
 		From("ticker").
 		Join(
@@ -183,13 +182,13 @@ func (TickerRepository) QueryLatestDaily(ctx context.Context, s sqlc.Selector, f
 		).
 		Join("stock_daily",
 			sb.And(
-				"ticker.id = sd.ticker_id",
-				"latest_daily.date = sd.date",
+				"ticker.id = stock_daily.ticker_id",
+				"latest_daily.date = stock_daily.date",
 			),
 		)
 
 	if len(f.TickerIDs) > 0 {
-		sb.Where(sb.In("ticker_id", sqlbuilder.List(f.TickerIDs)))
+		sb.Where(sb.In("ticker.id", sqlbuilder.List(f.TickerIDs)))
 	}
 
 	q, args := sb.BuildWithFlavor(sqlbuilder.PostgreSQL)
@@ -205,7 +204,6 @@ func (TickerRepository) QueryLatestDaily(ctx context.Context, s sqlc.Selector, f
 	}
 
 	return res, nil
-
 }
 
 type daily struct {

@@ -180,3 +180,47 @@ func TestTickerRepository_SaveTicker(t *testing.T) {
 		})
 	}
 }
+
+func TestTickerRepository_QueryLatestDaily(t *testing.T) {
+	for tName, tCase := range map[string]struct {
+		filter stocks.QueryDailyFilter
+		exp    []stocks.TickerWithData
+	}{
+		"one_ticker": {
+			filter: stocks.QueryDailyFilter{
+				TickerIDs: []string{"aad17418-6764-4ecd-90ed-bb1d7091edcc"},
+			},
+			exp: []stocks.TickerWithData{},
+		},
+		"two_tickers": {
+			filter: stocks.QueryDailyFilter{
+				TickerIDs: []string{"aad17418-6764-4ecd-90ed-bb1d7091edcc", "3439d561-b4db-4455-aff9-da2119573574"},
+			},
+			exp: []stocks.TickerWithData{},
+		},
+		"not_existing_ticker": {
+			filter: stocks.QueryDailyFilter{
+				TickerIDs: []string{"38dcdca9-a2fe-4b46-8f10-aa1bd0fd26e7"},
+			},
+			exp: []stocks.TickerWithData{},
+		},
+		"all": {
+			filter: stocks.QueryDailyFilter{
+				TickerIDs: []string{},
+			},
+			exp: []stocks.TickerWithData{},
+		},
+	} {
+		t.Run(tName, func(t *testing.T) {
+			tCase := tCase
+			defer mustTruncateTables(t, testDB)
+
+			fx.mustExecSQLFixture(t, testDB, "data.sql")
+			d, err := TickerRepository{}.
+				QueryLatestDaily(context.Background(), testDB, tCase.filter)
+
+			require.NoError(t, err)
+			require.ElementsMatch(t, tCase.exp, d)
+		})
+	}
+}
