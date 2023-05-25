@@ -14,7 +14,7 @@ const (
 )
 
 var (
-	currencyRateTableColumns = []string{"rate_date", "base_currency", "target_currency", "sale", "purchase"}
+	currencyRateTableColumns = []string{"rate_date", "base_currency", "target_currency", "sale", "purchase", "source"}
 )
 
 type Rater struct{}
@@ -29,7 +29,7 @@ func (r Rater) SaveRate(ctx context.Context, executor sqlc.Executor, crs []excha
 		Cols(currencyRateTableColumns...)
 
 	for _, cr := range crs {
-		ib.Values(cr.Date, cr.Base, cr.Rated, cr.Sale, cr.Purchase)
+		ib.Values(cr.Date, cr.Base, cr.Rated, cr.Sale, cr.Purchase, cr.Source)
 	}
 
 	q, args := ib.BuildWithFlavor(sqlbuilder.PostgreSQL)
@@ -53,6 +53,7 @@ type rate struct {
 	Target   string    `db:"target_currency"`
 	Sale     float64   `db:"sale"`
 	Purchase float64   `db:"purchase"`
+	Source   string    `db:"source"`
 }
 
 func (r rate) ToCurrencyRate() (exchanger.CurrencyRate, error) {
@@ -72,6 +73,7 @@ func (r rate) ToCurrencyRate() (exchanger.CurrencyRate, error) {
 		Sale:     r.Sale,
 		Purchase: r.Purchase,
 		Date:     r.Date,
+		Source:   exchanger.ExchangeSource(r.Source),
 	}, nil
 }
 
@@ -81,6 +83,7 @@ func (r Rater) FindRates(
 	c exchanger.Currency,
 	start time.Time,
 	end time.Time,
+	source exchanger.ExchangeSource,
 ) ([]exchanger.CurrencyRate, error) {
 	sb := sqlbuilder.NewSelectBuilder()
 	sb.Select(currencyRateTableColumns...).
@@ -88,6 +91,7 @@ func (r Rater) FindRates(
 		Where(sb.And(
 			sb.Equal("target_currency", c),
 			sb.Between("rate_date", start, end),
+			sb.Equal("source", source),
 		))
 
 	q, args := sb.BuildWithFlavor(sqlbuilder.PostgreSQL)

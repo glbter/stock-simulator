@@ -30,7 +30,7 @@ func NewClient(c *http.Client, url string) PrivatBankCurrencyRater {
 }
 
 func (cr PrivatBankCurrencyRater) FindRate(c exchanger.Currency, date time.Time) (exchanger.CurrencyRate, error) {
-	resp, err := http.Get(cr.url + "?date=" + date.Format(pbFormat))
+	resp, err := cr.client.Get(cr.url + "?date=" + date.Format(pbFormat))
 	if err != nil {
 		return exchanger.CurrencyRate{}, err
 	}

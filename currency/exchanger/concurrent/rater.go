@@ -1,6 +1,7 @@
-package rater
+package concurent
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sort"
@@ -10,12 +11,19 @@ import (
 	"github.com/glbter/currency-ex/currency/exchanger"
 )
 
+func NewRater(c exchanger.CurrencyRater, interval time.Duration) Rater {
+	return Rater{
+		c:            c,
+		timeInterval: interval,
+	}
+}
+
 type Rater struct {
 	c            exchanger.CurrencyRater
 	timeInterval time.Duration
 }
 
-func (r Rater) FindRates(c exchanger.Currency, start time.Time, end time.Time) ([]exchanger.CurrencyRate, error) {
+func (r Rater) FindRates(ctx context.Context, c exchanger.Currency, start time.Time, end time.Time) ([]exchanger.CurrencyRate, error) {
 	var (
 		wg sync.WaitGroup
 
@@ -28,9 +36,22 @@ func (r Rater) FindRates(c exchanger.Currency, start time.Time, end time.Time) (
 	for i := int64(0); i < intervals; i++ {
 		date := start.Add(time.Duration(i) * r.timeInterval)
 
+		select {
+		case <-ctx.Done():
+			continue
+		default:
+		}
+
 		wg.Add(1)
 		go func(date time.Time) {
 			defer wg.Done()
+
+			select {
+			case <-ctx.Done():
+				errs <- ctx.Err()
+				return
+			default:
+			}
 
 			rate, err := r.c.FindRate(c, date)
 			if err != nil {

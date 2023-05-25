@@ -1,6 +1,7 @@
-package rater
+package concurent
 
 import (
+	"context"
 	"github.com/glbter/currency-ex/currency/exchanger"
 	"github.com/glbter/currency-ex/currency/exchanger/mock"
 	"github.com/golang/mock/gomock"
@@ -150,7 +151,7 @@ func TestRater_FindRates(t *testing.T) {
 					)
 			}
 
-			res, err := r.FindRates(exchanger.USD, now, now.Add(6*time.Hour))
+			res, err := r.FindRates(context.Background(), exchanger.USD, now, now.Add(6*time.Hour))
 
 			require.Equal(t, tData.expRes, res)
 			if tData.expErr == nil {

@@ -1,6 +1,7 @@
 package exchanger
 
 import (
+	"context"
 	"fmt"
 	"time"
 )
@@ -12,7 +13,7 @@ type CurrencyRater interface {
 //mockgen -package mock -destination currency/exchanger/mock/mock.go  github.com/glbter/currency-ex/currency/exchanger CurrencyRater
 
 type CurrencySeriesRater interface {
-	FindRates(c Currency, start time.Time, end time.Time) ([]CurrencyRate, error)
+	FindRates(ctx context.Context, c Currency, start time.Time, end time.Time) ([]CurrencyRate, error)
 }
 
 type CurrencyRate struct {
@@ -21,6 +22,7 @@ type CurrencyRate struct {
 	Sale     float64
 	Purchase float64
 	Date     time.Time
+	Source   ExchangeSource
 }
 
 type Currency string
@@ -43,3 +45,10 @@ func ToCurrency(c string) (Currency, error) {
 		return "", fmt.Errorf("unknown currency %v", c)
 	}
 }
+
+type ExchangeSource string
+
+const (
+	ExchangeSourcePrivat ExchangeSource = "privat"
+	ExchangeSourceNBU    ExchangeSource = "NBU"
+)
