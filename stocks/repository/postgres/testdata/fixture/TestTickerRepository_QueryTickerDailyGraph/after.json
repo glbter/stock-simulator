@@ -1,0 +1,47 @@
+[
+    {
+        "TickerID": "3439d561-b4db-4455-aff9-da2119573574",
+        "Date": "2010-01-21T00:00:00Z",
+        "High": 5,
+        "Low": 4,
+        "Open": 6,
+        "Close": 7,
+        "Volume": 0
+    },
+    {
+        "TickerID": "3439d561-b4db-4455-aff9-da2119573574",
+        "Date": "2010-01-22T00:00:00Z",
+        "High": 6,
+        "Low": 5,
+        "Open": 7,
+        "Close": 8,
+        "Volume": 0
+    },
+    {
+        "TickerID": "3439d561-b4db-4455-aff9-da2119573574",
+        "Date": "2010-01-23T00:00:00Z",
+        "High": 7,
+        "Low": 6,
+        "Open": 8,
+        "Close": 9,
+        "Volume": 0
+    },
+    {
+        "TickerID": "3439d561-b4db-4455-aff9-da2119573574",
+        "Date": "2010-01-24T00:00:00Z",
+        "High": 8,
+        "Low": 7,
+        "Open": 9,
+        "Close": 10,
+        "Volume": 0
+    },
+    {
+        "TickerID": "3439d561-b4db-4455-aff9-da2119573574",
+        "Date": "2010-01-25T00:00:00Z",
+        "High": 9,
+        "Low": 8,
+        "Open": 10,
+        "Close": 11,
+        "Volume": 0
+    }
+]

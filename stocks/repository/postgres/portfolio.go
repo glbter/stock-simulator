@@ -3,7 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
-	sqlc "github.com/glbter/currency-ex/sql"
+	sqlc "github.com/glbter/currency-ex/pkg/sql"
 	"github.com/glbter/currency-ex/stocks"
 	"github.com/huandu/go-sqlbuilder"
 	"strings"
@@ -85,19 +85,19 @@ func (PortfolioRepository) CountTickerAmount(
 	s sqlc.Selector,
 	p stocks.CountTickerAmountParams,
 ) ([]stocks.PortfolioTickerAmount, error) {
-	list := ""
+	tickerSQLFilter := ""
 	if len(p.TickerIDs) > 0 {
 		l := make([]string, 0, len(p.TickerIDs))
 		for i := 0; i < len(p.TickerIDs); i++ {
 			l = append(l, fmt.Sprintf("$%d", i+2))
 		}
-		list = strings.Join(l, ", ")
+		tickerSQLFilter = fmt.Sprintf("and pr.ticker_id IN (%v)", strings.Join(l, ", "))
 	}
 
 	q := `
 select
     t.ticker_id,
-    coalesce(t.total_amount, 0) 						as amount,
+    coalesce(t.total_amount, 0) as amount
 from ticker tt
 join (
 	select
@@ -117,8 +117,8 @@ join (
 		right join portfolio_record as pr
 			on s.ticker_id = pr.ticker_id
 			and s.date > pr.date
-		where pr.investor_id = $1 and pr.ticker_id IN (` + list + `)
-		group by pr.id, pr.action, pr.ticker_id
+		where pr.investor_id = $1 ` + tickerSQLFilter +
+		`group by pr.id, pr.action, pr.ticker_id
 	) as t
 	  on pr.id = t.check_id
 	group by t.ticker_id
@@ -234,7 +234,6 @@ from (
 	 order by ordering, name
 ) t;
 `
-
 	var sqlRes []portfolio
 	if err := s.Select(ctx, &sqlRes, q, userID); err != nil {
 		return stocks.PortfolioState{}, err

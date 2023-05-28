@@ -36,11 +36,11 @@ CREATE TABLE IF NOT EXISTS stock_daily (
 
 CREATE TYPE portfolio_action AS ENUM ('BUY', 'SELL');
 
-CREATE TYPE currency AS ENUM ('UAH', 'USD', 'EUR');
+-- CREATE TYPE currency AS ENUM ('UAH', 'USD', 'EUR');
 
 CREATE TABLE IF NOT EXISTS portfolio_record(
     id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-    investor_id UUID NOT NULL,
+    investor_id VARCHAR(36) NOT NULL,
     ticker_id UUID NOT NULL,
     date date NOT NULL DEFAULT date(now()),
     amount NUMERIC(7,4) NOT NULL, -- 999.9999

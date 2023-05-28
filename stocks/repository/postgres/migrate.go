@@ -3,7 +3,7 @@ package postgres
 import (
 	"context"
 	"embed"
-	sqlc "github.com/glbter/currency-ex/sql"
+	sqlc "github.com/glbter/currency-ex/pkg/sql"
 )
 
 //go:embed migrations

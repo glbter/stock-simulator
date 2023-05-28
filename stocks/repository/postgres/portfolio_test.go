@@ -9,7 +9,7 @@ import (
 
 func TestPortfolioRepository_CountPortfolio(t *testing.T) {
 	defer mustTruncateTables(t, testDB)
-	fx.mustExecSQLFixture(t, testDB, "data.sql")
+	fx.MustExecSQLFixture(t, testDB, "data.sql")
 
 	for tName, tCase := range map[string]struct {
 		userID string
@@ -121,6 +121,7 @@ func TestPortfolioRepository_TradeTickers(t *testing.T) {
 			},
 		},
 	} {
+		tCase := tCase
 		t.Run(tName, func(t *testing.T) {
 			defer mustTruncateTables(t, testDB)
 
@@ -145,6 +146,56 @@ func TestPortfolioRepository_TradeTickers(t *testing.T) {
 			require.Equal(t, tCase.expected.Amount, res[0].Amount)
 			require.Equal(t, tCase.expected.Price, res[0].Price)
 			require.Equal(t, tCase.expected.Action, res[0].Action)
+		})
+	}
+}
+
+func TestPortfolioRepository_CountTickerAmount(t *testing.T) {
+	for tName, tCase := range map[string]struct {
+		params   stocks.CountTickerAmountParams
+		expected []stocks.PortfolioTickerAmount
+	}{
+		"all_for_user": {
+			params: stocks.CountTickerAmountParams{
+				UserID: "4ffdaa1c-9c25-4a79-a3a6-cf47ba361728",
+			},
+			expected: []stocks.PortfolioTickerAmount{
+				{
+					TickerID: "aad17418-6764-4ecd-90ed-bb1d7091edcc",
+					Amount:   6,
+				},
+				{
+					TickerID: "3439d561-b4db-4455-aff9-da2119573574",
+					Amount:   1,
+				},
+			},
+		},
+		"ticker_for_user": {
+			params: stocks.CountTickerAmountParams{
+				UserID: "4ffdaa1c-9c25-4a79-a3a6-cf47ba361728",
+				TickerIDs: []string{
+					"aad17418-6764-4ecd-90ed-bb1d7091edcc",
+				},
+			},
+			expected: []stocks.PortfolioTickerAmount{
+				{
+					TickerID: "aad17418-6764-4ecd-90ed-bb1d7091edcc",
+					Amount:   6,
+				},
+			},
+		},
+	} {
+		tCase := tCase
+		t.Run(tName, func(t *testing.T) {
+			defer mustTruncateTables(t, testDB)
+
+			fx.MustExecSQLFixture(t, testDB, "data.sql")
+
+			r, err := PortfolioRepository{}.
+				CountTickerAmount(context.Background(), testDB, tCase.params)
+
+			require.NoError(t, err)
+			require.ElementsMatch(t, tCase.expected, r)
 		})
 	}
 }

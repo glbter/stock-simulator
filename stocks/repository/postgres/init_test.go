@@ -3,20 +3,21 @@ package postgres
 import (
 	"context"
 	"fmt"
-	sqlc "github.com/glbter/currency-ex/sql"
-	"github.com/glbter/currency-ex/sql/pgx"
+	sqlc "github.com/glbter/currency-ex/pkg/sql"
+	pgx2 "github.com/glbter/currency-ex/pkg/sql/pgx"
+	"github.com/glbter/currency-ex/pkg/stesting"
 	"log"
 	"os"
 	"path"
-	"path/filepath"
 	"testing"
+	"time"
 )
 
 const dbSchema = "portfolio_test_schema"
 
 var (
 	testDB sqlc.DB
-	fx     *FixtureLoader
+	fx     *stesting.FixtureLoader
 )
 
 func TestMain(m *testing.M) {
@@ -28,12 +29,12 @@ func TestMain(m *testing.M) {
 
 	ctx := context.Background()
 
-	p, err := pgx.NewPool(ctx, dsn)
+	p, err := pgx2.NewPool(ctx, dsn)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	db := pgx.NewDB(p, dbSchema)
+	db := pgx2.NewDB(p, dbSchema)
 	if err := sqlc.PrepareSchema(ctx, db, dbSchema); err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -49,7 +50,7 @@ func TestMain(m *testing.M) {
 	//
 	//fmt.Printf("%d migrations applied\n", c)
 
-	fx = NewFixtureLoader(path.Join(".", "testdata"))
+	fx = stesting.NewFixtureLoader(path.Join(".", "testdata"))
 	testDB = db
 
 	os.Exit(m.Run())
@@ -74,35 +75,8 @@ RESTART IDENTITY CASCADE`)
 	}
 }
 
-func NewFixtureLoader(basePath string) *FixtureLoader {
-	return &FixtureLoader{
-		basePath: basePath,
-	}
-}
-
-type FixtureLoader struct {
-	basePath string
-}
-
-func (fx FixtureLoader) execSQLFixture(db sqlc.DB, fileName string) error {
-	res, err := os.ReadFile(filepath.Join(fx.basePath, filepath.Clean(fileName)))
-	if err != nil {
-		return err
-	}
-
-	_, err = db.Exec(context.Background(), string(res))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (fx FixtureLoader) mustExecSQLFixture(t *testing.T, db sqlc.DB, fileName string) {
-	t.Helper()
-	if err := fx.execSQLFixture(db, fileName); err != nil {
-		t.Fatal(err.Error())
-	}
+func pointerTime(t time.Time) *time.Time {
+	return &t
 }
 
 func pointerFloat64(f float64) *float64 {

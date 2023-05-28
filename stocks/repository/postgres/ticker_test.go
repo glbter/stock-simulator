@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"github.com/glbter/currency-ex/stocks"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -39,9 +41,10 @@ func TestTickerRepository_SaveSplits(t *testing.T) {
 		},
 		"empty": {},
 	} {
+		tCase := tCase
 		t.Run(tName, func(t *testing.T) {
 			defer mustTruncateTables(t, testDB)
-			fx.mustExecSQLFixture(t, testDB, "save_tickers.sql")
+			fx.MustExecSQLFixture(t, testDB, "save_tickers.sql")
 
 			require.NoError(t, TickerRepository{}.
 				SaveSplits(context.Background(), testDB, tCase.splits))
@@ -102,9 +105,10 @@ func TestTickerRepository_SaveDaily(t *testing.T) {
 		},
 		"empty": {},
 	} {
+		tCase := tCase
 		t.Run(tName, func(t *testing.T) {
 			defer mustTruncateTables(t, testDB)
-			fx.mustExecSQLFixture(t, testDB, "save_tickers.sql")
+			fx.MustExecSQLFixture(t, testDB, "save_tickers.sql")
 
 			require.NoError(t, TickerRepository{}.
 				SaveDaily(context.Background(), testDB, tCase.daily))
@@ -156,6 +160,7 @@ func TestTickerRepository_SaveTicker(t *testing.T) {
 		},
 		"empty": {},
 	} {
+		tCase := tCase
 		t.Run(tName, func(t *testing.T) {
 			defer mustTruncateTables(t, testDB)
 
@@ -190,13 +195,48 @@ func TestTickerRepository_QueryLatestDaily(t *testing.T) {
 			filter: stocks.QueryDailyFilter{
 				TickerIDs: []string{"aad17418-6764-4ecd-90ed-bb1d7091edcc"},
 			},
-			exp: []stocks.TickerWithData{},
+			exp: []stocks.TickerWithData{
+				{
+					Ticker: stocks.Ticker{
+						ID:   "aad17418-6764-4ecd-90ed-bb1d7091edcc",
+						Name: "AAPL",
+					},
+					High:     3,
+					Low:      2,
+					Open:     4,
+					Close:    5,
+					DataDate: time.Date(2010, 01, 20, 0, 0, 0, 0, time.UTC),
+				},
+			},
 		},
 		"two_tickers": {
 			filter: stocks.QueryDailyFilter{
 				TickerIDs: []string{"aad17418-6764-4ecd-90ed-bb1d7091edcc", "3439d561-b4db-4455-aff9-da2119573574"},
 			},
-			exp: []stocks.TickerWithData{},
+			exp: []stocks.TickerWithData{
+				{
+					Ticker: stocks.Ticker{
+						ID:   "aad17418-6764-4ecd-90ed-bb1d7091edcc",
+						Name: "AAPL",
+					},
+					High:     3,
+					Low:      2,
+					Open:     4,
+					Close:    5,
+					DataDate: time.Date(2010, 01, 20, 0, 0, 0, 0, time.UTC),
+				},
+				{
+					Ticker: stocks.Ticker{
+						ID:   "3439d561-b4db-4455-aff9-da2119573574",
+						Name: "AAPL2",
+					},
+					High:     3,
+					Low:      2,
+					Open:     4,
+					Close:    5,
+					DataDate: time.Date(2010, 01, 20, 0, 0, 0, 0, time.UTC),
+				},
+			},
 		},
 		"not_existing_ticker": {
 			filter: stocks.QueryDailyFilter{
@@ -208,19 +248,165 @@ func TestTickerRepository_QueryLatestDaily(t *testing.T) {
 			filter: stocks.QueryDailyFilter{
 				TickerIDs: []string{},
 			},
-			exp: []stocks.TickerWithData{},
+			exp: []stocks.TickerWithData{
+				{
+					Ticker: stocks.Ticker{
+						ID:   "aad17418-6764-4ecd-90ed-bb1d7091edcc",
+						Name: "AAPL",
+					},
+					High:     3,
+					Low:      2,
+					Open:     4,
+					Close:    5,
+					DataDate: time.Date(2010, 01, 20, 0, 0, 0, 0, time.UTC),
+				},
+				{
+					Ticker: stocks.Ticker{
+						ID:   "3439d561-b4db-4455-aff9-da2119573574",
+						Name: "AAPL2",
+					},
+					High:     3,
+					Low:      2,
+					Open:     4,
+					Close:    5,
+					DataDate: time.Date(2010, 01, 20, 0, 0, 0, 0, time.UTC),
+				},
+			},
 		},
 	} {
+		tCase := tCase
 		t.Run(tName, func(t *testing.T) {
-			tCase := tCase
 			defer mustTruncateTables(t, testDB)
 
-			fx.mustExecSQLFixture(t, testDB, "data.sql")
+			fx.MustExecSQLFixture(t, testDB, "data2.sql")
 			d, err := TickerRepository{}.
 				QueryLatestDaily(context.Background(), testDB, tCase.filter)
 
 			require.NoError(t, err)
 			require.ElementsMatch(t, tCase.exp, d)
+		})
+	}
+}
+
+func TestTickerRepository_QueryTickers(t *testing.T) {
+	for tName, tCase := range map[string]struct {
+		filter   stocks.QueryTickersFilters
+		expected []stocks.Ticker
+	}{
+		"all": {
+			filter: stocks.QueryTickersFilters{},
+			expected: []stocks.Ticker{
+				{
+					ID:   "aad17418-6764-4ecd-90ed-bb1d7091edcc",
+					Name: "AAPL",
+				},
+				{
+					ID:   "3439d561-b4db-4455-aff9-da2119573574",
+					Name: "AAPL2",
+				},
+			},
+		},
+		"ticker_id": {
+			filter: stocks.QueryTickersFilters{
+				IDs: []string{"aad17418-6764-4ecd-90ed-bb1d7091edcc"},
+			},
+			expected: []stocks.Ticker{
+				{
+					ID:   "aad17418-6764-4ecd-90ed-bb1d7091edcc",
+					Name: "AAPL",
+				},
+			},
+		},
+		"ticker_name": {
+			filter: stocks.QueryTickersFilters{
+				Tickers: []string{"AAPL2"},
+			},
+			expected: []stocks.Ticker{
+				{
+					ID:   "3439d561-b4db-4455-aff9-da2119573574",
+					Name: "AAPL2",
+				},
+			},
+		},
+		"ticker_name_id": {
+			filter: stocks.QueryTickersFilters{
+				IDs:     []string{"aad17418-6764-4ecd-90ed-bb1d7091edcc"},
+				Tickers: []string{"AAPL2"},
+			},
+			expected: []stocks.Ticker{},
+		},
+	} {
+		tCase := tCase
+		t.Run(tName, func(t *testing.T) {
+			defer mustTruncateTables(t, testDB)
+
+			fx.MustExecSQLFixture(t, testDB, "data.sql")
+
+			d, err := TickerRepository{}.
+				QueryTickers(context.Background(), testDB, tCase.filter)
+
+			require.NoError(t, err)
+			require.ElementsMatch(t, tCase.expected, d)
+		})
+	}
+}
+
+func TestTickerRepository_QueryTickerDailyGraph(t *testing.T) {
+	for tName, tCase := range map[string]struct {
+		filter     stocks.QueryDailyGraphParams
+		expFixture string
+	}{
+		"all_for_ticker": {
+			filter: stocks.QueryDailyGraphParams{
+				TickerIDs: []string{"3439d561-b4db-4455-aff9-da2119573574"},
+			},
+			expFixture: "all_for_ticker.json",
+		},
+		"all": {
+			filter:     stocks.QueryDailyGraphParams{},
+			expFixture: "all.json",
+		},
+		"before": {
+			filter: stocks.QueryDailyGraphParams{
+				TickerIDs:     []string{"3439d561-b4db-4455-aff9-da2119573574"},
+				BeforeDateInc: pointerTime(time.Date(2010, 01, 24, 0, 0, 0, 0, time.UTC)), //2010-01-24T00:00:00Z
+			},
+			expFixture: "before.json",
+		},
+		"after": {
+			filter: stocks.QueryDailyGraphParams{
+				TickerIDs:    []string{"3439d561-b4db-4455-aff9-da2119573574"},
+				AfterDateInc: pointerTime(time.Date(2010, 01, 21, 0, 0, 0, 0, time.UTC)), //2010-01-21T00:00:00Z
+			},
+			expFixture: "after.json",
+		},
+		"before_after": {
+			filter: stocks.QueryDailyGraphParams{
+				TickerIDs:     []string{"3439d561-b4db-4455-aff9-da2119573574"},
+				BeforeDateInc: pointerTime(time.Date(2010, 01, 24, 0, 0, 0, 0, time.UTC)), //2010-01-24T00:00:00Z
+				AfterDateInc:  pointerTime(time.Date(2010, 01, 21, 0, 0, 0, 0, time.UTC)), //2010-01-24T00:00:00Z
+			},
+			expFixture: "before_after.json",
+		},
+	} {
+		tfName := t.Name()
+		tCase := tCase
+		t.Run(tName, func(t *testing.T) {
+			defer mustTruncateTables(t, testDB)
+
+			fx.MustExecSQLFixture(t, testDB, "query_daily_graph.sql")
+
+			fixture := fx.MustLoadStringFixture(t, fmt.Sprintf("%v/%v", tfName, tCase.expFixture))
+
+			d, err := TickerRepository{}.
+				QueryTickerDailyGraph(context.Background(), testDB, tCase.filter)
+
+			require.NoError(t, err)
+
+			res, err := json.Marshal(d)
+			require.NoError(t, err)
+
+			require.JSONEq(t, fixture, string(res))
 		})
 	}
 }

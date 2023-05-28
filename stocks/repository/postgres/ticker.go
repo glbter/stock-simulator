@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"context"
-	sqlc "github.com/glbter/currency-ex/sql"
+	sqlc "github.com/glbter/currency-ex/pkg/sql"
 	"github.com/glbter/currency-ex/stocks"
 	"github.com/huandu/go-sqlbuilder"
 	"time"
@@ -81,15 +81,15 @@ func (TickerRepository) SaveTicker(ctx context.Context, e sqlc.Executor, ps []st
 }
 
 type ticker struct {
-	ID          string
-	Name        string
-	Destination *string
+	ID          string  `db:"id"`
+	Name        string  `db:"name"`
+	Description *string `db:"description"`
 }
 
 func (t ticker) toEntity() stocks.Ticker {
 	var d string
-	if t.Destination != nil {
-		d = *t.Destination
+	if t.Description != nil {
+		d = *t.Description
 	}
 
 	return stocks.Ticker{
@@ -146,11 +146,12 @@ func (d tickerWithDaily) toEntity() stocks.TickerWithData {
 			Name:        d.Name,
 			Description: d.Description,
 		},
-		High:   d.High,
-		Low:    d.Low,
-		Open:   d.Open,
-		Close:  d.Close,
-		Volume: d.Volume,
+		High:     d.High,
+		Low:      d.Low,
+		Open:     d.Open,
+		Close:    d.Close,
+		Volume:   d.Volume,
+		DataDate: d.Date,
 	}
 }
 
@@ -167,13 +168,13 @@ func (TickerRepository) QueryLatestDaily(ctx context.Context, s sqlc.Selector, f
 	sb.Select(
 		"ticker.id as ticker_id",
 		"ticker.name",
-		"coalesce(ticker.description, '')",
+		"coalesce(ticker.description, '') as description",
 		"stock_daily.date",
-		"coalesce(stock_daily.high, 0)",
-		"coalesce(stock_daily.low, 0)",
-		"coalesce(stock_daily.open, 0)",
-		"coalesce(stock_daily.close, 0)",
-		"coalesce(stock_daily.volume, 0)",
+		"coalesce(stock_daily.high, 0) as high",
+		"coalesce(stock_daily.low, 0) as low",
+		"coalesce(stock_daily.open, 0) as open",
+		"coalesce(stock_daily.close, 0) as close",
+		"coalesce(stock_daily.volume, 0) as volume",
 	).
 		From("ticker").
 		Join(
@@ -228,16 +229,17 @@ func (d daily) toEntity() stocks.StockDailyData {
 	}
 }
 
+// inclusive before
 func (TickerRepository) QueryTickerDailyGraph(ctx context.Context, s sqlc.Selector, f stocks.QueryDailyGraphParams) ([]stocks.StockDailyData, error) {
 	sb := sqlbuilder.NewSelectBuilder()
 	sb.Select(
 		"sd.ticker_id",
 		"sd.date",
-		"coalesce(sd.high, 0)",
-		"coalesce(sd.low, 0)",
-		"coalesce(sd.open, 0)",
-		"coalesce(sd.close, 0)",
-		"coalesce(sd.volume, 0)",
+		"coalesce(sd.high, 0) as high",
+		"coalesce(sd.low, 0) as low",
+		"coalesce(sd.open, 0) as open",
+		"coalesce(sd.close, 0) as close",
+		"coalesce(sd.volume, 0) as volume",
 	).
 		From(sb.As("stock_daily", "sd"))
 
@@ -246,11 +248,11 @@ func (TickerRepository) QueryTickerDailyGraph(ctx context.Context, s sqlc.Select
 	}
 
 	if f.BeforeDateInc != nil {
-		sb.Where(sb.LessEqualThan("sb.date", *f.BeforeDateInc))
+		sb.Where(sb.LessEqualThan("sd.date", *f.BeforeDateInc))
 	}
 
 	if f.AfterDateInc != nil {
-		sb.Where(sb.GreaterEqualThan("sb.date", *f.AfterDateInc))
+		sb.Where(sb.GreaterEqualThan("sd.date", *f.AfterDateInc))
 	}
 
 	q, args := sb.BuildWithFlavor(sqlbuilder.PostgreSQL)
