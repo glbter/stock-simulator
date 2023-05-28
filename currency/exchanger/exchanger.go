@@ -16,6 +16,12 @@ type CurrencySeriesRater interface {
 	FindRates(ctx context.Context, c Currency, start time.Time, end time.Time) ([]CurrencyRate, error)
 }
 
+type FindExchangeRateParams struct {
+	Currency Currency
+	Start    *time.Time
+	End      *time.Time
+}
+
 type CurrencyRate struct {
 	Base     Currency
 	Rated    Currency
@@ -49,6 +55,6 @@ func ToCurrency(c string) (Currency, error) {
 type ExchangeSource string
 
 const (
-	ExchangeSourcePrivat ExchangeSource = "privat"
+	ExchangeSourcePrivat ExchangeSource = "Privat"
 	ExchangeSourceNBU    ExchangeSource = "NBU"
 )

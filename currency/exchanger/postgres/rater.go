@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/glbter/currency-ex/currency/exchanger"
-	sqlc "github.com/glbter/currency-ex/sql"
+	sqlc "github.com/glbter/currency-ex/pkg/sql"
 	"github.com/huandu/go-sqlbuilder"
 	"time"
 )
@@ -77,22 +77,35 @@ func (r rate) ToCurrencyRate() (exchanger.CurrencyRate, error) {
 	}, nil
 }
 
+type FindExchangeRateParams struct {
+	Currency exchanger.Currency
+	Start    *time.Time
+	End      *time.Time
+	Source   exchanger.ExchangeSource
+}
+
+// inclusive interval
 func (r Rater) FindRates(
 	ctx context.Context,
 	s sqlc.Selector,
-	c exchanger.Currency,
-	start time.Time,
-	end time.Time,
-	source exchanger.ExchangeSource,
+	p FindExchangeRateParams,
 ) ([]exchanger.CurrencyRate, error) {
 	sb := sqlbuilder.NewSelectBuilder()
 	sb.Select(currencyRateTableColumns...).
 		From(currencyRateTable).
 		Where(sb.And(
-			sb.Equal("target_currency", c),
-			sb.Between("rate_date", start, end),
-			sb.Equal("source", source),
+			sb.Equal("target_currency", p.Currency),
+			sb.Equal("source", p.Source),
 		))
+
+	if p.Start != nil && p.End != nil {
+		sb.Where(sb.Between("rate_date", p.Start, p.End))
+	} else if p.Start != nil {
+		sb.Where(sb.GreaterEqualThan("rate_date", p.Start))
+
+	} else if p.End != nil {
+		sb.Where(sb.LessEqualThan("rate_date", p.End))
+	}
 
 	q, args := sb.BuildWithFlavor(sqlbuilder.PostgreSQL)
 
