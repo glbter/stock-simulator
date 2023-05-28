@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/georgysavva/scany/pgxscan"
-	sqlc "github.com/glbter/currency-ex/sql"
+	sqlc "github.com/glbter/currency-ex/pkg/sql"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"strings"
