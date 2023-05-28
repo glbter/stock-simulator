@@ -3,11 +3,10 @@ package lambda
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/glbter/currency-ex/currency/exchanger"
 	"github.com/glbter/currency-ex/pkg/serrors"
-	sqlc "github.com/glbter/currency-ex/sql"
 	"github.com/glbter/currency-ex/stocks"
 	"math/rand"
 	"net/http"
@@ -23,23 +22,27 @@ const (
 )
 
 type PortfolioHandler struct {
-	db              sqlc.DB
-	portfolioRepo   stocks.PortfolioRepository
+	//db            sqlc.DB
+	//portfolioRepo stocks.PortfolioRepository
 	userIDExtractor UserIDExtractor
 
-	tickerRepo stocks.TickerRepository
+	usecases stocks.PortfolioUsecases
+
+	//tickerRepo stocks.TickerRepository
 }
 
 func NewPortfolioHandler(
-	db sqlc.DB,
-	portfolioRepo stocks.PortfolioRepository,
-	tickerRepo stocks.TickerRepository,
+	//db sqlc.DB,
+	usecases stocks.PortfolioUsecases,
+	//portfolioRepo stocks.PortfolioRepository,
+	//tickerRepo stocks.TickerRepository,
 	userIDExtractor UserIDExtractor,
 ) PortfolioHandler {
 	return PortfolioHandler{
-		db:              db,
-		portfolioRepo:   portfolioRepo,
-		tickerRepo:      tickerRepo,
+		//db:              db,
+		usecases: usecases,
+		//portfolioRepo:   portfolioRepo,
+		//tickerRepo:      tickerRepo,
 		userIDExtractor: userIDExtractor,
 	}
 }
@@ -55,7 +58,10 @@ func (h PortfolioHandler) GetCountPortfolio(
 		}, err
 	}
 
-	state, err := h.portfolioRepo.CountPortfolio(ctx, h.db, userID)
+	state, err := h.usecases.CountPortfolio(ctx, userID, stocks.ExchangeParams{
+		ConverFrom: exchanger.USD,
+		ConvertTo:  exchanger.USD,
+	})
 	if err != nil {
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: serrors.GetHttpCodeFrom(err),
@@ -76,8 +82,9 @@ func (h PortfolioHandler) GetCountPortfolio(
 }
 
 type TradeTickerRequest struct {
-	Amount float64                `json:"amount"`
-	Action stocks.PortfolioAction `json:"action"`
+	Amount   float64                `json:"amount"`
+	Action   stocks.PortfolioAction `json:"action"`
+	TickerID string                 `json:"ticker_id"`
 }
 
 func (h PortfolioHandler) TradeTicker(
@@ -98,53 +105,66 @@ func (h PortfolioHandler) TradeTicker(
 		}, fmt.Errorf("unmarshal req: %w", err)
 	}
 
-	tickerID, ok := ExtractFromPath(request, tickerIDInPath)
-	if !ok {
-		return events.APIGatewayV2HTTPResponse{
-			StatusCode: http.StatusBadRequest,
-		}, errors.New("get ticker id")
-	}
+	//tickerID, ok := ExtractFromPath(request, tickerIDInPath)
+	//if !ok {
+	//	return events.APIGatewayV2HTTPResponse{
+	//		StatusCode: http.StatusBadRequest,
+	//	}, errors.New("get ticker id")
+	//}
 
 	// change to ticker name maybe?
-	amount, err := h.portfolioRepo.CountTickerAmount(ctx, h.db, stocks.CountTickerAmountParams{
-		UserID:    userID,
-		TickerIDs: []string{tickerID},
-	})
-	if err != nil {
-		return events.APIGatewayV2HTTPResponse{
-			StatusCode: serrors.GetHttpCodeFrom(err),
-		}, err
-	}
 
-	if len(amount) != 1 || amount[0].Amount-req.Amount < 0 {
-		return events.APIGatewayV2HTTPResponse{
-			StatusCode: http.StatusBadRequest,
-		}, errors.New("not enough tickers")
-	}
+	//amount, err := h.portfolioRepo.CountTickerAmount(ctx, h.db, stocks.CountTickerAmountParams{
+	//	UserID:    userID,
+	//	TickerIDs: []string{tickerID},
+	//})
+	//if err != nil {
+	//	return events.APIGatewayV2HTTPResponse{
+	//		StatusCode: serrors.GetHttpCodeFrom(err),
+	//	}, err
+	//}
+	//
+	//if len(amount) != 1 || amount[0].Amount-req.Amount < 0 {
+	//	return events.APIGatewayV2HTTPResponse{
+	//		StatusCode: http.StatusBadRequest,
+	//	}, errors.New("not enough tickers")
+	//}
+	//
+	//dailies, err := h.tickerRepo.QueryLatestDaily(ctx, h.db, stocks.QueryDailyFilter{
+	//	TickerIDs: []string{tickerID},
+	//})
+	//if err != nil {
+	//	return events.APIGatewayV2HTTPResponse{
+	//		StatusCode: serrors.GetHttpCodeFrom(err),
+	//	}, err
+	//}
+	//
+	//if len(dailies) != 0 {
+	//	return events.APIGatewayV2HTTPResponse{
+	//		StatusCode: serrors.GetHttpCodeFrom(err),
+	//	}, err
+	//}
+	//
+	//daily := dailies[0]
+	//price := simulatePrice(daily.Low, daily.High)
+	//// TODO: add trade by price limit
+	//if err := h.portfolioRepo.TradeTickers(ctx, h.db, stocks.TradeTickerParams{
+	//	TickerID: tickerID,
+	//	UserID:   userID,
+	//	Amount:   req.Amount,
+	//	PriceUSD: price,
+	//	Action:   req.Action,
+	//}); err != nil {
+	//	return events.APIGatewayV2HTTPResponse{
+	//		StatusCode: serrors.GetHttpCodeFrom(err),
+	//	}, err
+	//}
 
-	dailies, err := h.tickerRepo.QueryLatestDaily(ctx, h.db, stocks.QueryDailyFilter{
-		TickerIDs: []string{tickerID},
-	})
-	if err != nil {
-		return events.APIGatewayV2HTTPResponse{
-			StatusCode: serrors.GetHttpCodeFrom(err),
-		}, err
-	}
-
-	if len(dailies) != 0 {
-		return events.APIGatewayV2HTTPResponse{
-			StatusCode: serrors.GetHttpCodeFrom(err),
-		}, err
-	}
-
-	daily := dailies[0]
-	price := simulatePrice(daily.Low, daily.High)
-	// TODO: add trade by price limit
-	if err := h.portfolioRepo.TradeTickers(ctx, h.db, stocks.TradeTickerParams{
-		TickerID: tickerID,
+	if err := h.usecases.TradeTickers(ctx, stocks.TradeTickerParams{
+		//TickerID: tickerID,
+		TickerID: req.TickerID,
 		UserID:   userID,
 		Amount:   req.Amount,
-		PriceUSD: price,
 		Action:   req.Action,
 	}); err != nil {
 		return events.APIGatewayV2HTTPResponse{

@@ -5,26 +5,29 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/glbter/currency-ex/currency/exchanger"
 	"github.com/glbter/currency-ex/pkg/serrors"
-	sqlc "github.com/glbter/currency-ex/sql"
 	"github.com/glbter/currency-ex/stocks"
 	"net/http"
 	"time"
 )
 
 type TickerHandler struct {
-	db sqlc.DB
+	//db sqlc.DB
 
-	tickerRepo stocks.TickerRepository
+	//tickerRepo stocks.TickerRepository
+	usecases stocks.TickerUsecases
 }
 
 func NewTickerHandler(
-	db sqlc.DB,
-	tickerRepo stocks.TickerRepository,
+	usecases stocks.TickerUsecases,
+	//db sqlc.DB,
+	//tickerRepo stocks.TickerRepository,
 ) TickerHandler {
 	return TickerHandler{
-		db:         db,
-		tickerRepo: tickerRepo,
+		usecases: usecases,
+		//db:         db,
+		//tickerRepo: tickerRepo,
 	}
 }
 
@@ -37,7 +40,16 @@ func (h TickerHandler) GetTickers(
 		tickerIDs = nil
 	}
 
-	tickerDaily, err := h.tickerRepo.QueryLatestDaily(ctx, h.db, stocks.QueryDailyFilter{TickerIDs: tickerIDs})
+	tickerDaily, err := h.usecases.QueryLatestDaily(ctx,
+		stocks.QueryDailyFilter{
+			TickerIDs: tickerIDs,
+		},
+		stocks.ExchangeParams{
+			ConverFrom: exchanger.USD,
+			ConvertTo:  exchanger.USD,
+		},
+	)
+	//tickerDaily, err := h.tickerRepo.QueryLatestDaily(ctx, h.db, stocks.QueryDailyFilter{TickerIDs: tickerIDs})
 	if err != nil {
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: serrors.GetHttpCodeFrom(err),
@@ -94,7 +106,11 @@ func (h TickerHandler) GetTickerGraph(
 		params.AfterDateInc = &after
 	}
 
-	graph, err := h.tickerRepo.QueryTickerDailyGraph(ctx, h.db, params)
+	graph, err := h.usecases.QueryTickerDailyGraph(ctx, params, stocks.ExchangeParams{
+		ConverFrom: exchanger.USD,
+		ConvertTo:  exchanger.USD,
+	})
+	//graph, err := h.tickerRepo.QueryTickerDailyGraph(ctx, h.db, params)
 	if err != nil {
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: serrors.GetHttpCodeFrom(err),

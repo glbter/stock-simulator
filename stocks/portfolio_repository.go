@@ -2,7 +2,7 @@ package stocks
 
 import (
 	"context"
-	sqlc "github.com/glbter/currency-ex/sql"
+	sqlc "github.com/glbter/currency-ex/pkg/sql"
 	"time"
 )
 

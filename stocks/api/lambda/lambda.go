@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/glbter/currency-ex/currency/exchanger/factory"
 	"github.com/glbter/currency-ex/pkg/serrors"
-	sqlc "github.com/glbter/currency-ex/sql"
-	"github.com/glbter/currency-ex/sql/pgx"
+	sqlc "github.com/glbter/currency-ex/pkg/sql"
+	pgx2 "github.com/glbter/currency-ex/pkg/sql/pgx"
 	"github.com/glbter/currency-ex/stocks/repository/postgres"
+	"github.com/glbter/currency-ex/stocks/usecases"
 	"github.com/golang-jwt/jwt/v4"
 	"os"
 	"strings"
@@ -30,9 +32,12 @@ type UserIDExtractorFromAuthHeader struct {
 }
 
 func (h UserIDExtractorFromAuthHeader) GetUserID(request events.APIGatewayV2HTTPRequest) (string, error) {
-	t, ok := request.Headers["authorization"]
+	t, ok := request.Headers["Authorization"]
 	if !ok || t == "" {
-		return "", fmt.Errorf("no authorization header: %w", serrors.ErrAuthorization)
+		t, ok = request.Headers["authorization"]
+		if !ok || t == "" {
+			return "", fmt.Errorf("no authorization header: %w", serrors.ErrAuthorization)
+		}
 	}
 
 	token, err := h.parser.ParseToken(t)
@@ -61,9 +66,9 @@ func (t JwtParser) ParseToken(token string) (ParsedToken, error) {
 		return ParsedToken{}, fmt.Errorf("parse token: %w", err)
 	}
 
-	if !tk.Valid {
-		return ParsedToken{}, fmt.Errorf("not valid token")
-	}
+	//if !tk.Valid {
+	//	return ParsedToken{}, fmt.Errorf("not valid token")
+	//}
 
 	cl, ok := tk.Claims.(*jwt.RegisteredClaims)
 	if !ok {
@@ -104,12 +109,12 @@ func initDB(ctx context.Context) (sqlc.DB, error) {
 		return nil, fmt.Errorf("no env param %s", DsnEnv)
 	}
 
-	pool, err := pgx.NewPool(ctx, dsn)
+	pool, err := pgx2.NewPool(ctx, dsn)
 	if err != nil {
 		return nil, fmt.Errorf("init pgx pool: %w", err)
 	}
 
-	return pgx.NewDB(pool, DBSchema), nil
+	return pgx2.NewDB(pool, DBSchema), nil
 }
 
 func InitLambdaPortfolioHandler(ctx context.Context) (PortfolioHandler, error) {
@@ -118,10 +123,23 @@ func InitLambdaPortfolioHandler(ctx context.Context) (PortfolioHandler, error) {
 		return PortfolioHandler{}, err
 	}
 
-	return NewPortfolioHandler(
+	r, err := factory.NewDBCurrencyRater(db)
+	if err != nil {
+		return PortfolioHandler{}, err
+	}
+
+	uc := usecases.NewPortfolioInteractor(
 		db,
 		postgres.NewPortfolioRepository(),
+		r,
 		postgres.NewTickerRepository(),
+	)
+
+	return NewPortfolioHandler(
+		uc,
+		//db,
+		//postgres.NewPortfolioRepository(),
+		//postgres.NewTickerRepository(),
 		UserIDExtractorFromAuthHeader{},
 	), nil
 }
@@ -132,8 +150,20 @@ func InitLambdaTickerHandler(ctx context.Context) (TickerHandler, error) {
 		return TickerHandler{}, err
 	}
 
-	return NewTickerHandler(
+	r, err := factory.NewDBCurrencyRater(db)
+	if err != nil {
+		return TickerHandler{}, err
+	}
+
+	uc := usecases.NewTickerInteractor(
 		db,
 		postgres.NewTickerRepository(),
+		r,
+	)
+
+	return NewTickerHandler(
+		uc,
+		//db,
+		//postgres.NewTickerRepository(),
 	), nil
 }
