@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Симулятор інвестицій</title>
+    <style>
+        /* CSS styling for the application */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        .stock-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .stock-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .stock-list li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Симулятор інвестицій</h1>
+</header>
+<main>
+    <div id="stockListContainer">
+<!--        <button onclick="login()">Login</button>-->
+<!--        <button onclick="logout()">Logout</button>-->
+        <ul class="stock-list" id="stockList">
+            <!-- Stock items will be dynamically added here -->
+        </ul>
+    </div>
+</main>
+
+<!-- Auth0 Lock library for authentication -->
+<script src="https://cdn.auth0.com/js/lock/12.0.2/lock.min.js"></script>
+<script>
+    // import { Auth0Lock } from 'auth0-lock';
+
+    // var options =
+    //     {
+    //         // language: 'ua',
+    //         auth: {
+    //             responseType: 'token',
+    //             redirectUrl: window.location.href,
+    //             // redirect: true
+    //
+    //             // params: {
+    //             //     scope: ''
+    //             // },
+    //             // responseMode: null,
+    //         }
+    //     };
+    //
+    // // Auth0 configuration <client_id>,<domain>
+    // const lock = new Auth0Lock('4bFggkRTQofaujBo0quaHkgpx2UfoDyr', 'dev-r1fw6swpk4dcvcyi.us.auth0.com', options);
+    //
+    // // Function to handle successful authentication
+    // function handleAuthentication() {
+    //     lock.on('authenticated', function(authResult) {
+    //         lock.getUserInfo(authResult.accessToken, function(error, profile) {
+    //             if (error) {
+    //                 console.log('Error retrieving user profile:', error);
+    //                 return;
+    //             }
+    //
+    //             // Save the user profile and access token in local storage
+    //             localStorage.setItem('accessToken', authResult.accessToken);
+    //             // localStorage.setItem('profile', JSON.stringify(profile));
+    //
+    //             // Call the fetchStockData function to populate the stock list
+    //             fetchStockData();
+    //         });
+    //     });
+    // }
+
+    // Function to fetch stock data and populate the list
+    async function fetchStockData() {
+        // try {
+        //     // Get the access token from local storage
+        //     const accessToken = localStorage.getItem('accessToken');
+        //
+        //     // Fetch stock data from an API using the access token (Replace with your own API endpoint)
+        //     const response = await fetch('https://api.example.com/stocks', {
+        //         headers: {
+        //             Authorization: 'Bearer ' + accessToken
+        //         }
+        //     });
+        //     const data = await response.json();
+        //
+        //     // Get the stock list element
+        //     const stockList = document.getElementById('stockList');
+        //
+        //     // Clear any existing stock items
+        //     stockList.innerHTML = '';
+        //
+        //     // Iterate through the stock data and create list items
+        //     data.forEach(stock => {
+        //         const { symbol, price, change } = stock;
+        //
+        //         // Create list item elements
+        //         const listItem = document.createElement('li');
+        //         const symbolSpan = document.createElement('span');
+        //         const priceSpan = document.createElement('span');
+        //         const changeSpan = document.createElement('span');
+        //
+        //         // Set the stock data to the element text content
+        //         symbolSpan.textContent = symbol;
+        //         priceSpan.textContent = price;
+        //         changeSpan.textContent = change;
+        //
+        //         // Append the spans to the list item
+        //         listItem.appendChild(symbolSpan);
+        //         listItem.appendChild(priceSpan);
+        //         listItem.appendChild(changeSpan);
+        //
+        //         // Append the list item to the stock list
+        //         stockList.appendChild(listItem);
+        //     });
+        // } catch (error) {
+        //     console.log('Error fetching stock data:', error);
+        // }
+    }
+
+    // Function to initiate the login process
+    function login() {
+        lock.show();
+    }
+
+    // // Function to handle user logout
+    // function logout() {
+    //     localStorage.removeItem('accessToken');
+    //     localStorage.removeItem('profile');
+    //     window.location.reload();
+    // }
+
+    // Check if the user is already authenticated
+    if (localStorage.getItem('accessToken')) {
+        // Call the fetchStockData function to populate the stock list if the user is authenticated
+        console.log(localStorage.getItem('accessToken'))
+        // fetchStockData();
+    } else {
+
+        // const session = sessionStorage.getItem('session');
+
+
+        // try {
+        //     // token = JSON.parse(session).token;
+        // } catch(e) {}
+
+        // console.log(token)
+
+        // const urlParams = new URLSearchParams(window.location.href);
+        // const token = urlParams.get('access_token');
+        const token = window.location.hash.substring(1);
+        // const token = window.location.href.match(/access_tokenz=([\w\d]+)/)[1];
+
+        if (token) {
+            localStorage.setItem('accessToken', token)
+    
+        } else {
+            // const urlParams = new URLSearchParams(window.location.hash);
+            // const token = urlParams.get('access_token');
+            // const token = window.location.hash.match(/access_tokenz=([\w\d]+)/)[1];
+            // if (token) {
+            //     localStorage.setItem('accessToken', token)
+            // } else {
+            window.location.replace("https://dev-r1fw6swpk4dcvcyi.us.auth0.com/authorize?client_id=4bFggkRTQofaujBo0quaHkgpx2UfoDyr&response_type=token&audience=https://stocks-simulatior/&redirect_uri=https://stocks-spa.s3.eu-central-1.amazonaws.com/implicit_grant.html");
+// 
+            // }
+
+
+
+        }
+
+
+        // let code 
+        // try {
+            // window.location.href.match(/code=([\w\d]+)/)[1]
+        //     code = window.location.href.match(/access_token=([\w\d]+)/)[1];
+        // } catch(e) {}
+
+        // Handle authentication if the user is not already authenticated
+        // window.location.replace("https://dev-r1fw6swpk4dcvcyi.us.auth0.com/authorize?client_id=4bFggkRTQofaujBo0quaHkgpx2UfoDyr&response_type=token&audience=https://stocks-simulatior/&response_mode=query&redirect_uri=http://localhost:63342/services/implicit_grant.html");
+
+        // handleAuthentication();
+
+        // lock.show(
+        //     {
+        //     dictionary: 'ua',
+        //     focusInput: true,
+        //     popup: false,
+        //     closable: false,
+        //
+        //     auth: {
+        //         responseType: 'token',
+        //         redirectUrl: window.location.href,
+        //         // redirect: true
+        //
+        //         // params: {
+        //         //     scope: ''
+        //         // },
+        //         // responseMode: null,
+        //     }
+        // }
+        // );
+        // console.log('no token')
+    }
+</script>
+</body>
+</html>

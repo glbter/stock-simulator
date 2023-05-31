@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<head>
+    <title>Симулятор інвестицій</title>
+    <style>
+
+        /*body{*/
+        /*    */
+        /*}*/
+
+        select{
+            /*background: #0a0a23;*/
+            /*min-height:100vh;*/
+            /*display:flex;*/
+            /*justify-content:center;*/
+            /*align-items:center;*/
+            /*color:#fff;*/
+
+            border:none;
+            padding: 10px 20px;
+            border-radius:5px;
+        }
+
+        select:focus{
+            outline:none;
+        }
+
+
+
+        <!--        test-->
+
+        /* CSS styling for the application */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            /*display: flex;*/
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+
+            justify-content: center;
+        }
+
+        header h2 {
+            text-align: center;
+        }
+
+
+        header h3 {
+            text-align: left;
+            justify-content: left;
+
+            float: left;
+            display: block;
+        }
+
+
+        main {
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+        }
+
+        .stock-panel {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 10px;
+            width: 600px;
+        }
+
+        .stock-panel h2 {
+            margin-top: 0;
+        }
+
+        .stock-panel input[type="text"],
+        .stock-panel button {
+            margin: 10px 0;
+            padding: 5px;
+            width: 100%;
+        }
+
+        /*#listStockItem{*/
+        /*  width: 70%;*/
+        /*}*/
+
+        .stock-panel button {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .stock-list button {
+            width: 30%;
+        }
+
+        .stock-list {
+            list-style-type: none;
+            padding: 0;
+            width: 60%; /* Set the width of the stock list to 100% */
+        }
+
+        .stock-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .stock-list li span {
+            flex: 1;
+            /*text-align: center;*/
+        }
+
+        .stock-list li:last-child {
+            border-bottom: none;
+        }
+
+       .trade-result {
+           text-align: center;
+           font-size: 24px;
+           background-color: cadetblue;
+       }
+
+        .trade-result-fail {
+            text-align: center;
+            font-size: 24px;
+            background-color: darksalmon;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h3>Назад</h3>
+    <h1>Симулятор інвестицій</h1>
+
+</header>
+<main>
+    <div class="container">
+        <div class="stock-panel">
+            <h2>Торгівля активами</h2>
+            <input type="text" placeholder="Код активу">
+            <input type="text" placeholder="Кількість">
+
+            <select name="action" id="action">
+                <option value="buy" selected>Купити</option>
+                <option value="Sell">Продати</option>
+            </select>
+<!--            <div class="dropdown">-->
+<!--                <button class="dropbtn">Операція</button>-->
+<!--                <div class="dropdown-content">-->
+<!--                    <a href="#">Купити</a>-->
+<!--                    <a href="#">Продати</a>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            <div class="dropdown">-->
+<!--                <button>Profile</button>-->
+<!--                <div class="dropdown-options">-->
+<!--                    <a href="#">Dashboard</a>-->
+<!--                    <a href="#">Setting</a>-->
+<!--                    <a href="#">Logout</a>-->
+<!--                </div>-->
+<!--            </div>-->
+
+
+
+
+            <button>Торгувати</button>
+<!--            <div class="trade-result-fail"> <p>Недостатньо активу на рахунку</p></div>-->
+
+            <div class="trade-result"> <p>Придбано</p></div>
+        </div>
+    </div>
+</main>
+
+
+<!-- Auth0 Lock library for authentication -->
+<script src="https://cdn.auth0.com/js/lock/12.0.2/lock.min.js"></script>
+<script>
+
+</script>
+
+</body>
+</html>
