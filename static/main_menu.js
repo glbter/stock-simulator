@@ -118,4 +118,4 @@ async function fetchStockData() {
     }
 }
 
-fetchStockData();
+await fetchStockData();
