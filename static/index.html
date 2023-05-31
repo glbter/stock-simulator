@@ -1,78 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="uk">
 <head>
   <title>Stock Trading Simulator</title>
-  <style>
-    /* CSS styling for the application */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-
-    header {
-      background-color: #333;
-      color: #fff;
-      padding: 20px;
-      text-align: center;
-    }
-
-    main {
-      padding: 20px;
-    }
-
-    .container {
-      display: flex;
-      justify-content: center;
-    }
-
-    .stock-panel {
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      padding: 20px;
-      margin: 10px;
-      max-width: 400px;
-    }
-
-    .stock-panel h2 {
-      margin-top: 0;
-    }
-
-    .stock-panel input[type="text"],
-    .stock-panel button {
-      margin: 10px 0;
-      padding: 5px;
-      width: 100%;
-    }
-
-    .stock-panel button {
-      background-color: #333;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-    }
-
-    .stock-list {
-      list-style-type: none;
-      padding: 0;
-    }
-
-    .stock-list li {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid #ccc;
-    }
-
-    .stock-list li span {
-      flex: 1;
-      /*text-align: center;*/
-    }
-
-    .stock-list li:last-child {
-      border-bottom: none;
-    }
-  </style>
+  <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
 <header>
@@ -129,7 +59,6 @@
 
 
 <!-- Auth0 Lock library for authentication -->
-<script src="https://cdn.auth0.com/js/lock/12.0.2/lock.min.js"></script>
 <script>
   // Function to fetch stock data and populate the list
   async function fetchStockData() {
@@ -240,21 +169,6 @@
 
   fetchStockData()
 
-  // Check if the user is already authenticated
-  // if (localStorage.getItem('accessToken')) {
-  //   // Call the fetchStockData function to populate the stock list if the user is authenticated
-  //   console.log(localStorage.getItem('accessToken'))
-  //   // fetchStockData();
-  // } else {
-  //
-  //   const token = window.location.hash.substring(1);
-  //
-  //   // if (token) {
-  //   //   localStorage.setItem('accessToken', token)
-  //   //
-  //   // } else {
-  //   // }
-  // }
 </script>
 
 </body>
