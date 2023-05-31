@@ -106,15 +106,7 @@ func (i TickerInteractor) QueryTickerDailyGraph(ctx context.Context, f stocks.Qu
 
 	for n := 0; n < len(data) || n < len(rates); n++ {
 		if data[g].Date.Equal(rates[j].Date) {
-			res = append(res, stocks.StockDailyData{
-				TickerID: data[g].TickerID,
-				Date:     data[g].Date,
-				Volume:   data[g].Volume,
-				High:     data[g].High * rates[j].Purchase,
-				Low:      data[g].Low * rates[j].Purchase,
-				Open:     data[g].Open * rates[j].Purchase,
-				Close:    data[g].Close * rates[j].Purchase,
-			})
+			res = append(res, data[g].MultiplyPrice(rates[j].Purchase))
 		}
 
 		if data[g].Date.Before(rates[j].Date) {
@@ -124,15 +116,7 @@ func (i TickerInteractor) QueryTickerDailyGraph(ctx context.Context, f stocks.Qu
 
 		if data[g].Date.After(rates[j].Date) {
 			//TODO: fix
-			res = append(res, stocks.StockDailyData{
-				TickerID: data[g].TickerID,
-				Date:     data[g].Date,
-				Volume:   data[g].Volume,
-				High:     data[g].High * rates[j].Purchase,
-				Low:      data[g].Low * rates[j].Purchase,
-				Open:     data[g].Open * rates[j].Purchase,
-				Close:    data[g].Close * rates[j].Purchase,
-			})
+			res = append(res, data[g].MultiplyPrice(rates[j].Purchase))
 		}
 	}
 

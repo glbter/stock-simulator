@@ -43,6 +43,18 @@ type StockDailyData struct {
 	Volume   float64
 }
 
+func (dd StockDailyData) MultiplyPrice(rate float64) StockDailyData {
+	return StockDailyData{
+		TickerID: dd.TickerID,
+		Date:     dd.Date,
+		Volume:   dd.Volume,
+		High:     dd.High * rate,
+		Low:      dd.Low * rate,
+		Open:     dd.Open * rate,
+		Close:    dd.Close * rate,
+	}
+}
+
 type PortfolioAction string
 
 const (
