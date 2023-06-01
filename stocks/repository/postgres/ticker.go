@@ -255,6 +255,8 @@ func (TickerRepository) QueryTickerDailyGraph(ctx context.Context, s sqlc.Select
 		sb.Where(sb.GreaterEqualThan("sd.date", *f.AfterDateInc))
 	}
 
+	sb.OrderBy("sd.ticker_id", "sd.date")
+
 	q, args := sb.BuildWithFlavor(sqlbuilder.PostgreSQL)
 
 	var daily []daily

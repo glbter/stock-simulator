@@ -12,9 +12,11 @@ BUILD_LAMBDA ?=CGO_ENABLED=0 GOOS=linux go build -o main; mkdir build; move .\ma
 
 
 
-#//mockgen -package mock -destination currency/exchanger/mock/mock.go  github.com/glbter/currency-ex/currency/exchanger CurrencyRater
+#//mockgen -package mock -destination currency/exchanger/mock/mock.go  github.com/glbter/currency-ex/currency/exchanger CurrencyRater,CurrencySeriesRater,AllCurrencyRater
 
+#//mockgen -package mock -destination stocks/mock/mock.go  github.com/glbter/currency-ex/stocks PortfolioRepository,TickerRepository
 
+#mockgen -package mock -destination pkg/sql/mock/mock.go  github.com/glbter/currency-ex/pkg/sql DB
 
 build:
 	mkdir target; \

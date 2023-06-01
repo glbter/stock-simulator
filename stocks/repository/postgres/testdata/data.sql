@@ -22,5 +22,7 @@ values
 insert into stock_daily
 (id, ticker_id, date, high, low, open, close)
 values
+    ('f14dc8c3-f320-402d-8353-d49a3ba35f70','aad17418-6764-4ecd-90ed-bb1d7091edcc', '19-Jan-2010', 3, 2, 4, 5),
+    ('5460ab36-feeb-45de-ab2a-dca06e904971', '3439d561-b4db-4455-aff9-da2119573574', '19-Jan-2010', 3, 2, 4, 5),
     ('fa160058-3012-46dc-8837-0cd264aa26da','aad17418-6764-4ecd-90ed-bb1d7091edcc', '20-Jan-2010', 3, 2, 4, 5),
     ('a57cb59e-d6ec-4f85-9a8a-883b8b960018', '3439d561-b4db-4455-aff9-da2119573574', '20-Jan-2010', 3, 2, 4, 5);

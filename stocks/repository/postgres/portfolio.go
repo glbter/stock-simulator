@@ -159,16 +159,15 @@ with portfolio_state as (
         t.total_amount * stock.close as close
     from ticker tt
 	join (
-        select ticker_id, high, low, open, close
-        from stock_daily
-        where id in (
-            select id
-            from (
-				 select id, max(date)
-				 from stock_daily
-				 group by id
-			 ) t
-        )
+        select stock_daily.ticker_id, high, low, open, close
+		from stock_daily
+		join (
+			select ticker_id, max(date) as date
+			from stock_daily
+			group by ticker_id
+		) as latest_daily
+			on stock_daily.ticker_id = latest_daily.ticker_id
+			and stock_daily.date = latest_daily.date
     ) stock
 	  on tt.id = stock.ticker_id
 	join (
