@@ -10,8 +10,6 @@ type Ticker struct {
 	ID          string
 	Name        string
 	Description string
-	//Type string
-	//Market string
 }
 
 type TickerWithData struct {

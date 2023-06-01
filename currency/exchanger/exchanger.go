@@ -10,8 +10,6 @@ type CurrencyRater interface {
 	FindRate(c Currency, date time.Time) (CurrencyRate, error)
 }
 
-//mockgen -package mock -destination currency/exchanger/mock/mock.go  github.com/glbter/currency-ex/currency/exchanger CurrencyRater
-
 type CurrencySeriesRater interface {
 	FindRates(ctx context.Context, c Currency, start time.Time, end time.Time) ([]CurrencyRate, error)
 }

@@ -43,13 +43,6 @@ func TestMain(m *testing.M) {
 		log.Fatalln(err.Error())
 	}
 
-	//c, err := Migrate(ctx, db)
-	//if err != nil {
-	//	log.Fatalln(err.Error())
-	//}
-	//
-	//fmt.Printf("%d migrations applied\n", c)
-
 	fx = stesting.NewFixtureLoader(path.Join(".", "testdata"))
 	testDB = db
 

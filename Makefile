@@ -10,6 +10,12 @@ BUILD_LAMBDA ?=CGO_ENABLED=0 GOOS=linux go build -o main; mkdir build; move .\ma
 #	move .\main .\target\main
 #	build-lambda-zip --output .\target\main.zip .\target\main
 
+
+
+#//mockgen -package mock -destination currency/exchanger/mock/mock.go  github.com/glbter/currency-ex/currency/exchanger CurrencyRater
+
+
+
 build:
 	mkdir target; \
 	$(BUILD_LAMBDA)

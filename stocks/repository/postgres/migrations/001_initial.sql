@@ -4,8 +4,6 @@ CREATE TABLE IF NOT EXISTS ticker (
     id UUID PRIMARY KEY NOT NULL DEFAULT uuid_generate_v4(),
     name VARCHAR(7) NOT NULL,
     description VARCHAR(255)
---     type varchar(20),
---     market varchar(20)
 );
 
 CREATE TABLE IF NOT EXISTS split (
@@ -26,17 +24,10 @@ CREATE TABLE IF NOT EXISTS stock_daily (
     open NUMERIC(8,3),
     close NUMERIC(8,3),
     volume NUMERIC(14,3)
---     PRIMARY KEY (ticker_id, date)
 );
-
--- CREATE TABLE holiday IF NOT EXIST (
---     date date,
---
--- )
 
 CREATE TYPE portfolio_action AS ENUM ('BUY', 'SELL');
 
--- CREATE TYPE currency AS ENUM ('UAH', 'USD', 'EUR');
 
 CREATE TABLE IF NOT EXISTS portfolio_record(
     id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -45,7 +36,6 @@ CREATE TABLE IF NOT EXISTS portfolio_record(
     date date NOT NULL DEFAULT date(now()),
     amount NUMERIC(7,4) NOT NULL, -- 999.9999
     price_usd NUMERIC(9,4) NOT NULL, -- 99999.9999
---     currency currency,
     action portfolio_action NOT NULL
 );
 
