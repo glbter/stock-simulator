@@ -1,34 +1,28 @@
-package exchanger
+package factory
 
 import (
 	"context"
 	"fmt"
+	"github.com/glbter/currency-ex/currency/exchanger"
 	"time"
 )
 
 type AllCurrencyRater struct {
-	rater CurrencySeriesRater
+	rater exchanger.CurrencySeriesRater
 }
 
-func NewAllCurrencyRater(rater CurrencySeriesRater) AllCurrencyRater {
+func NewAllCurrencyRater(rater exchanger.CurrencySeriesRater) AllCurrencyRater {
 	return AllCurrencyRater{
 		rater: rater,
 	}
 }
 
-type ConvertCurrencyParams struct {
-	ConvertFrom Currency
-	ConvertTo   Currency
-	Start       time.Time
-	End         time.Time
-}
-
-func (r AllCurrencyRater) FindRates(ctx context.Context, params ConvertCurrencyParams) ([]CurrencyRate, error) {
+func (r AllCurrencyRater) FindRates(ctx context.Context, params exchanger.ConvertCurrencyParams) ([]exchanger.CurrencyRate, error) {
 	if params.ConvertFrom == params.ConvertTo {
-		var res []CurrencyRate
+		var res []exchanger.CurrencyRate
 		date := params.Start
 		for date.Before(params.End.Add(time.Hour)) {
-			res = append(res, CurrencyRate{
+			res = append(res, exchanger.CurrencyRate{
 				Base:     params.ConvertFrom,
 				Rated:    params.ConvertTo,
 				Sale:     1,
@@ -41,7 +35,7 @@ func (r AllCurrencyRater) FindRates(ctx context.Context, params ConvertCurrencyP
 		}
 	}
 
-	if params.ConvertFrom == UAH {
+	if params.ConvertFrom == exchanger.UAH {
 		return r.rater.FindRates(ctx, params.ConvertTo, params.Start, params.End)
 	}
 
@@ -50,9 +44,9 @@ func (r AllCurrencyRater) FindRates(ctx context.Context, params ConvertCurrencyP
 		return nil, fmt.Errorf("find rates: %w", err)
 	}
 
-	res := make([]CurrencyRate, 0, len(rates))
+	res := make([]exchanger.CurrencyRate, 0, len(rates))
 	for _, rate := range rates {
-		res = append(res, CurrencyRate{
+		res = append(res, exchanger.CurrencyRate{
 			Base:     params.ConvertFrom,
 			Rated:    params.ConvertTo,
 			Sale:     1 / rate.Sale,

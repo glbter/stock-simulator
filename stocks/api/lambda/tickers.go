@@ -13,21 +13,14 @@ import (
 )
 
 type TickerHandler struct {
-	//db sqlc.DB
-
-	//tickerRepo stocks.TickerRepository
 	usecases stocks.TickerUsecases
 }
 
 func NewTickerHandler(
 	usecases stocks.TickerUsecases,
-	//db sqlc.DB,
-	//tickerRepo stocks.TickerRepository,
 ) TickerHandler {
 	return TickerHandler{
 		usecases: usecases,
-		//db:         db,
-		//tickerRepo: tickerRepo,
 	}
 }
 
@@ -49,7 +42,6 @@ func (h TickerHandler) GetTickers(
 			ConvertTo:  exchanger.USD,
 		},
 	)
-	//tickerDaily, err := h.tickerRepo.QueryLatestDaily(ctx, h.db, stocks.QueryDailyFilter{TickerIDs: tickerIDs})
 	if err != nil {
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: serrors.GetHttpCodeFrom(err),
@@ -110,7 +102,6 @@ func (h TickerHandler) GetTickerGraph(
 		ConverFrom: exchanger.USD,
 		ConvertTo:  exchanger.USD,
 	})
-	//graph, err := h.tickerRepo.QueryTickerDailyGraph(ctx, h.db, params)
 	if err != nil {
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: serrors.GetHttpCodeFrom(err),

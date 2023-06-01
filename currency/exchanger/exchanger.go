@@ -6,6 +6,17 @@ import (
 	"time"
 )
 
+type AllCurrencyRater interface {
+	FindRates(ctx context.Context, params ConvertCurrencyParams) ([]CurrencyRate, error)
+}
+
+type ConvertCurrencyParams struct {
+	ConvertFrom Currency
+	ConvertTo   Currency
+	Start       time.Time
+	End         time.Time
+}
+
 type CurrencyRater interface {
 	FindRate(c Currency, date time.Time) (CurrencyRate, error)
 }

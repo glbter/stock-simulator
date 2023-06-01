@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/glbter/currency-ex/currency/exchanger"
+	"github.com/glbter/currency-ex/currency/exchanger/factory"
 	"github.com/glbter/currency-ex/pkg/serrors"
 	sqlc "github.com/glbter/currency-ex/pkg/sql"
 	"github.com/glbter/currency-ex/stocks"
@@ -12,13 +13,13 @@ import (
 type TickerInteractor struct {
 	db            sqlc.DB
 	repo          stocks.TickerRepository
-	exchangeRater exchanger.AllCurrencyRater
+	exchangeRater factory.AllCurrencyRater
 }
 
 func NewTickerInteractor(
 	db sqlc.DB,
 	repo stocks.TickerRepository,
-	exchangeRater exchanger.AllCurrencyRater,
+	exchangeRater factory.AllCurrencyRater,
 ) TickerInteractor {
 	return TickerInteractor{
 		db:            db,

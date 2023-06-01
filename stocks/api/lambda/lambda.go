@@ -137,9 +137,6 @@ func InitLambdaPortfolioHandler(ctx context.Context) (PortfolioHandler, error) {
 
 	return NewPortfolioHandler(
 		uc,
-		//db,
-		//postgres.NewPortfolioRepository(),
-		//postgres.NewTickerRepository(),
 		UserIDExtractorFromAuthHeader{},
 	), nil
 }
@@ -163,7 +160,5 @@ func InitLambdaTickerHandler(ctx context.Context) (TickerHandler, error) {
 
 	return NewTickerHandler(
 		uc,
-		//db,
-		//postgres.NewTickerRepository(),
 	), nil
 }
