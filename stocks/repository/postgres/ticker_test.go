@@ -238,6 +238,24 @@ func TestTickerRepository_QueryLatestDaily(t *testing.T) {
 				},
 			},
 		},
+		"by_name": {
+			filter: stocks.QueryDailyFilter{
+				Tickers: []string{"AAPL"},
+			},
+			exp: []stocks.TickerWithData{
+				{
+					Ticker: stocks.Ticker{
+						ID:   "aad17418-6764-4ecd-90ed-bb1d7091edcc",
+						Name: "AAPL",
+					},
+					High:     3,
+					Low:      2,
+					Open:     4,
+					Close:    5,
+					DataDate: time.Date(2010, 01, 20, 0, 0, 0, 0, time.UTC),
+				},
+			},
+		},
 		"not_existing_ticker": {
 			filter: stocks.QueryDailyFilter{
 				TickerIDs: []string{"38dcdca9-a2fe-4b46-8f10-aa1bd0fd26e7"},

@@ -47,8 +47,8 @@ func (h PortfolioHandler) GetCountPortfolio(
 	}
 
 	state, err := h.usecases.CountPortfolio(ctx, userID, stocks.ExchangeParams{
-		ConverFrom: exchanger.USD,
-		ConvertTo:  exchanger.USD,
+		ConvertFrom: exchanger.USD,
+		ConvertTo:   exchanger.UAH,
 	})
 	if err != nil {
 		return events.APIGatewayV2HTTPResponse{

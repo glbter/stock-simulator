@@ -162,7 +162,8 @@ func (TickerRepository) QueryLatestDaily(ctx context.Context, s sqlc.Selector, f
 			"ticker_id",
 			"max(date) as date",
 		).
-		From("stock_daily").GroupBy("ticker_id")
+		From("stock_daily").
+		GroupBy("ticker_id")
 
 	sb := sqlbuilder.NewSelectBuilder()
 	sb.Select(
@@ -191,6 +192,12 @@ func (TickerRepository) QueryLatestDaily(ctx context.Context, s sqlc.Selector, f
 	if len(f.TickerIDs) > 0 {
 		sb.Where(sb.In("ticker.id", sqlbuilder.List(f.TickerIDs)))
 	}
+
+	if len(f.Tickers) > 0 {
+		sb.Where(sb.In("ticker.name", sqlbuilder.List(f.Tickers)))
+	}
+
+	sb.OrderBy("ticker.name")
 
 	q, args := sb.BuildWithFlavor(sqlbuilder.PostgreSQL)
 

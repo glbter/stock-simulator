@@ -6,8 +6,8 @@ import (
 )
 
 type ExchangeParams struct {
-	ConverFrom exchanger.Currency
-	ConvertTo  exchanger.Currency
+	ConvertFrom exchanger.Currency
+	ConvertTo   exchanger.Currency
 }
 
 type TickerUsecases interface {

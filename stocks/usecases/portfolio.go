@@ -90,12 +90,15 @@ func (i PortfolioInteractor) CountPortfolio(ctx context.Context, userID string, 
 		return stocks.PortfolioState{}, fmt.Errorf("count portfolio: %w", err)
 	}
 
-	//return state, nil
+	if len(state.All) == 0 {
+		return state, nil
+	}
+
 	now := time.Now()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 
 	rates, err := i.exchangeRater.FindRates(ctx, exchanger.ConvertCurrencyParams{
-		ConvertFrom: ep.ConverFrom,
+		ConvertFrom: ep.ConvertFrom,
 		ConvertTo:   ep.ConvertTo,
 		Start:       today,
 		End:         today,
@@ -110,31 +113,26 @@ func (i PortfolioInteractor) CountPortfolio(ctx context.Context, userID string, 
 
 	rate := rates[0]
 	res := stocks.PortfolioState{
-		Total: stocks.PortfolioTickerState{
-			TickerID:    state.Total.TickerID,
-			Name:        state.Total.Name,
-			Description: state.Total.Description,
-			Amount:      state.Total.Amount,
-			High:        state.Total.High * rate.Purchase,
-			Low:         state.Total.Low * rate.Purchase,
-			Open:        state.Total.Open * rate.Purchase,
-			Close:       state.Total.Close * rate.Purchase,
-		},
-		All: make([]stocks.PortfolioTickerState, 0, len(state.All)),
+		Total: convertRateOfPortfolioState(state.Total, rate),
+		All:   make([]stocks.PortfolioTickerState, 0, len(state.All)),
 	}
 
 	for _, ps := range state.All {
-		res.All = append(res.All, stocks.PortfolioTickerState{
-			TickerID:    ps.TickerID,
-			Name:        ps.Name,
-			Description: ps.Description,
-			Amount:      ps.Amount,
-			High:        ps.High * rate.Purchase,
-			Low:         ps.Low * rate.Purchase,
-			Open:        ps.Open * rate.Purchase,
-			Close:       ps.Close * rate.Purchase,
-		})
+		res.All = append(res.All, convertRateOfPortfolioState(ps, rate))
 	}
 
 	return res, nil
+}
+
+func convertRateOfPortfolioState(ps stocks.PortfolioTickerState, rate exchanger.CurrencyRate) stocks.PortfolioTickerState {
+	return stocks.PortfolioTickerState{
+		TickerID:    ps.TickerID,
+		Name:        ps.Name,
+		Description: ps.Description,
+		Amount:      ps.Amount,
+		High:        ps.High * rate.Sale,
+		Low:         ps.Low * rate.Sale,
+		Open:        ps.Open * rate.Sale,
+		Close:       ps.Close * rate.Sale,
+	}
 }

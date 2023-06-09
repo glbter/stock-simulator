@@ -4,22 +4,22 @@ import (
 	"context"
 	"fmt"
 	"github.com/glbter/currency-ex/currency/exchanger"
-	"github.com/glbter/currency-ex/currency/exchanger/factory"
 	"github.com/glbter/currency-ex/pkg/serrors"
 	sqlc "github.com/glbter/currency-ex/pkg/sql"
 	"github.com/glbter/currency-ex/stocks"
+	"time"
 )
 
 type TickerInteractor struct {
 	db            sqlc.DB
 	repo          stocks.TickerRepository
-	exchangeRater factory.AllCurrencyRater
+	exchangeRater exchanger.AllCurrencyRater
 }
 
 func NewTickerInteractor(
 	db sqlc.DB,
 	repo stocks.TickerRepository,
-	exchangeRater factory.AllCurrencyRater,
+	exchangeRater exchanger.AllCurrencyRater,
 ) TickerInteractor {
 	return TickerInteractor{
 		db:            db,
@@ -42,27 +42,29 @@ func (i TickerInteractor) QueryLatestDaily(
 		return nil, fmt.Errorf("query daily: %w", err)
 	}
 
-	//return tickerDaily, nil
-
 	res := make([]stocks.TickerWithData, 0, len(tickerDaily))
+
+	now := time.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+
+	rates, err := i.exchangeRater.FindRates(ctx, exchanger.ConvertCurrencyParams{
+		ConvertFrom: ep.ConvertFrom,
+		ConvertTo:   ep.ConvertTo,
+		Start:       today,
+		End:         today,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("find rate: %w", err)
+	}
+
+	// TODO: fix
+	if len(rates) == 0 {
+		return tickerDaily, nil
+	}
+
+	rate := rates[len(rates)-1]
+
 	for _, d := range tickerDaily {
-		rates, err := i.exchangeRater.FindRates(ctx, exchanger.ConvertCurrencyParams{
-			ConvertFrom: ep.ConverFrom,
-			ConvertTo:   ep.ConvertTo,
-			Start:       d.DataDate,
-			End:         d.DataDate,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("find rate: %w", err)
-		}
-
-		// TODO: fix
-		if len(rates) != 1 {
-			continue
-		}
-
-		rate := rates[0]
-
 		res = append(res, stocks.TickerWithData{
 			Ticker:   d.Ticker,
 			DataDate: d.DataDate,
@@ -85,7 +87,7 @@ func (i TickerInteractor) QueryTickerDailyGraph(ctx context.Context, f stocks.Qu
 	//return data, nil
 
 	rates, err := i.exchangeRater.FindRates(ctx, exchanger.ConvertCurrencyParams{
-		ConvertFrom: ep.ConverFrom,
+		ConvertFrom: ep.ConvertFrom,
 		ConvertTo:   ep.ConvertTo,
 		Start:       data[0].Date,
 		End:         data[len(data)-1].Date,
@@ -116,7 +118,6 @@ func (i TickerInteractor) QueryTickerDailyGraph(ctx context.Context, f stocks.Qu
 		}
 
 		if data[g].Date.After(rates[j].Date) {
-			//TODO: fix
 			res = append(res, data[g].MultiplyPrice(rates[j].Purchase))
 		}
 	}

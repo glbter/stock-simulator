@@ -104,7 +104,7 @@ join (
 		t.ticker_id,
 		sum(t.mul * pr.amount) as total_amount
 	from portfolio_record as pr
-	join (
+	left join (
 		-- count for each record the multiply value
 		select
 			pr.id as check_id,

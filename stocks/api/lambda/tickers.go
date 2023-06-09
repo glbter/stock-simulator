@@ -12,6 +12,10 @@ import (
 	"time"
 )
 
+const (
+	tickerNamesInQuery = "ticker_names"
+)
+
 type TickerHandler struct {
 	usecases stocks.TickerUsecases
 }
@@ -33,13 +37,19 @@ func (h TickerHandler) GetTickers(
 		tickerIDs = nil
 	}
 
+	tickerNames, ok := ExtractSliceFromQuery(request, tickerNamesInQuery)
+	if !ok {
+		tickerNames = nil
+	}
+
 	tickerDaily, err := h.usecases.QueryLatestDaily(ctx,
 		stocks.QueryDailyFilter{
 			TickerIDs: tickerIDs,
+			Tickers:   tickerNames,
 		},
 		stocks.ExchangeParams{
-			ConverFrom: exchanger.USD,
-			ConvertTo:  exchanger.USD,
+			ConvertFrom: exchanger.USD,
+			ConvertTo:   exchanger.UAH,
 		},
 	)
 	if err != nil {
@@ -99,8 +109,8 @@ func (h TickerHandler) GetTickerGraph(
 	}
 
 	graph, err := h.usecases.QueryTickerDailyGraph(ctx, params, stocks.ExchangeParams{
-		ConverFrom: exchanger.USD,
-		ConvertTo:  exchanger.USD,
+		ConvertFrom: exchanger.USD,
+		ConvertTo:   exchanger.USD,
 	})
 	if err != nil {
 		return events.APIGatewayV2HTTPResponse{

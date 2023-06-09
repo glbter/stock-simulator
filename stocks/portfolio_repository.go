@@ -64,6 +64,7 @@ type QueryTickersFilters struct {
 
 type QueryDailyFilter struct {
 	TickerIDs []string
+	Tickers   []string
 }
 
 type QueryDailyGraphParams struct {
