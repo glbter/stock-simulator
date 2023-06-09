@@ -32,6 +32,15 @@ func NewPortfolioInteractor(
 	}
 }
 
+type ErrNotEnoughTickers struct {
+	Want float64
+	Have float64
+}
+
+func (e ErrNotEnoughTickers) Error() string {
+	return fmt.Sprintf("not enough tickers, want %v, have %v", e.Want, e.Have)
+}
+
 func (i PortfolioInteractor) TradeTickers(ctx context.Context, p stocks.TradeTickerParams) error {
 	// change to ticker name maybe?
 	amount, err := i.repo.CountTickerAmount(ctx, i.db, stocks.CountTickerAmountParams{
@@ -43,9 +52,12 @@ func (i PortfolioInteractor) TradeTickers(ctx context.Context, p stocks.TradeTic
 	}
 
 	if p.Action == stocks.ACTION_SELL {
-		if len(amount) != 1 || amount[0].Amount-p.Amount < 0 {
-			return fmt.Errorf("%w: %v", serrors.ErrBadInput, "not enough tickers")
+		if len(amount) != 1 || amount[0].Amount < p.Amount {
+			return ErrNotEnoughTickers{Want: p.Amount, Have: amount[0].Amount}
 		}
+	}
+	if p.Action != stocks.ACTION_BUY {
+		return fmt.Errorf("%w: %v", serrors.ErrBadInput, "unknown action")
 	}
 
 	dailies, err := i.tickerRepo.QueryLatestDaily(ctx, i.db, stocks.QueryDailyFilter{

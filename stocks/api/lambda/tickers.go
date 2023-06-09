@@ -55,14 +55,14 @@ func (h TickerHandler) GetTickers(
 	if err != nil {
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: serrors.GetHttpCodeFrom(err),
-		}, err
+		}, serrors.GetErrorByTypeAndLog(err)
 	}
 
 	b, err := json.Marshal(tickerDaily)
 	if err != nil {
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: http.StatusInternalServerError,
-		}, err
+		}, serrors.GetErrorByTypeAndLog(err)
 	}
 
 	return events.APIGatewayV2HTTPResponse{
@@ -90,7 +90,7 @@ func (h TickerHandler) GetTickerGraph(
 		if err != nil {
 			return events.APIGatewayV2HTTPResponse{
 				StatusCode: http.StatusBadRequest,
-			}, fmt.Errorf("parse date before %w", err)
+			}, serrors.GetErrorByTypeAndLog(fmt.Errorf("%w: parse date before: %v", serrors.ErrBadInput, err))
 		}
 
 		params.BeforeDateInc = &before
@@ -102,7 +102,7 @@ func (h TickerHandler) GetTickerGraph(
 		if err != nil {
 			return events.APIGatewayV2HTTPResponse{
 				StatusCode: http.StatusBadRequest,
-			}, fmt.Errorf("parse date after %w", err)
+			}, serrors.GetErrorByTypeAndLog(fmt.Errorf("%w: parse date after: %v", serrors.ErrBadInput, err))
 		}
 
 		params.AfterDateInc = &after
@@ -115,14 +115,14 @@ func (h TickerHandler) GetTickerGraph(
 	if err != nil {
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: serrors.GetHttpCodeFrom(err),
-		}, err
+		}, serrors.GetErrorByTypeAndLog(err)
 	}
 
 	b, err := json.Marshal(graph)
 	if err != nil {
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: http.StatusInternalServerError,
-		}, err
+		}, serrors.GetErrorByTypeAndLog(err)
 	}
 
 	return events.APIGatewayV2HTTPResponse{

@@ -2,6 +2,7 @@ package serrors
 
 import (
 	"errors"
+	"log"
 	"net/http"
 )
 
@@ -27,5 +28,23 @@ func GetHttpCodeFrom(err error) int {
 		return http.StatusUnauthorized
 	default:
 		return http.StatusInternalServerError
+	}
+}
+
+func GetErrorByTypeAndLog(err error) error {
+	log.Println(err)
+	switch {
+	case errors.Is(err, ErrBadInput):
+		return nil
+	case errors.Is(err, ErrNotFound):
+		return nil
+	case errors.Is(err, ErrInternal):
+		return err
+	case errors.Is(err, ErrForbidden):
+		return nil
+	case errors.Is(err, ErrAuthorization):
+		return nil
+	default:
+		return err
 	}
 }

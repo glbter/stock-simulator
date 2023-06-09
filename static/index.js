@@ -55,11 +55,11 @@ async function fetchStockData(ticker, tickerName) {
             const { ID, Name, Description } = Ticker;
 
             const divBtn = document.createElement('div')
-            divBtn.onclick = function (tickerID) {
-                return function () {
-                    showTickerDetailsMenu(tickerID)
-                }
-            }(ID)
+            // divBtn.onclick = function (tickerID) {
+            //     return function () {
+            //         showTickerDetailsMenu(tickerID)
+            //     }
+            // }(ID)
             const listItem = document.createElement('li');
             const symbolSpan = document.createElement('span');
             const priceHighSpan = document.createElement('span');
@@ -101,7 +101,7 @@ async function showMainMenu() {
     document.getElementById('main_menu').style.display = 'inherit'
 
 
-    fetchStockData()
+    await fetchStockData()
 }
 
 async function showInvestmentPortfolioMenu() {
@@ -232,6 +232,14 @@ async function tradeTicker() {
                     reAuthorize()
                 }
             })
+
+        if (action === "BUY") {
+            showTradeSuccess("Придбано")
+        }
+
+        if (action === "SELL") {
+            showTradeSuccess("Продано")
+        }
 
     } catch (e) {
         showTradeError("Виникла помилка")

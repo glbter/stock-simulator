@@ -3,11 +3,13 @@ package lambda
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/glbter/currency-ex/currency/exchanger"
 	"github.com/glbter/currency-ex/pkg/serrors"
 	"github.com/glbter/currency-ex/stocks"
+	"github.com/glbter/currency-ex/stocks/usecases"
 	"net/http"
 )
 
@@ -43,7 +45,7 @@ func (h PortfolioHandler) GetCountPortfolio(
 	if err != nil {
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: serrors.GetHttpCodeFrom(err),
-		}, err
+		}, serrors.GetErrorByTypeAndLog(err)
 	}
 
 	state, err := h.usecases.CountPortfolio(ctx, userID, stocks.ExchangeParams{
@@ -53,14 +55,14 @@ func (h PortfolioHandler) GetCountPortfolio(
 	if err != nil {
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: serrors.GetHttpCodeFrom(err),
-		}, err
+		}, serrors.GetErrorByTypeAndLog(err)
 	}
 
 	b, err := json.Marshal(state)
 	if err != nil {
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: http.StatusInternalServerError,
-		}, err
+		}, serrors.GetErrorByTypeAndLog(err)
 	}
 
 	return events.APIGatewayV2HTTPResponse{
@@ -90,7 +92,7 @@ func (h PortfolioHandler) TradeTicker(
 	if err := json.Unmarshal([]byte(request.Body), &req); err != nil {
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: http.StatusBadRequest,
-		}, fmt.Errorf("unmarshal req: %w", err)
+		}, serrors.GetErrorByTypeAndLog(fmt.Errorf("%w: unmarshal req: %v", serrors.ErrBadInput, err))
 	}
 
 	//// TODO: add trade by price limit
@@ -101,12 +103,20 @@ func (h PortfolioHandler) TradeTicker(
 		Amount:   req.Amount,
 		Action:   req.Action,
 	}); err != nil {
+		var e usecases.ErrNotEnoughTickers
+		if errors.As(err, &e) {
+			return events.APIGatewayV2HTTPResponse{
+				Body:       fmt.Sprintf("{\"msg\":\"%v\"}", e.Error()),
+				StatusCode: http.StatusBadRequest,
+			}, nil
+		}
+
 		return events.APIGatewayV2HTTPResponse{
 			StatusCode: serrors.GetHttpCodeFrom(err),
-		}, err
+		}, serrors.GetErrorByTypeAndLog(err)
 	}
 
 	return events.APIGatewayV2HTTPResponse{
-		StatusCode: http.StatusNoContent,
+		StatusCode: http.StatusOK,
 	}, nil
 }
