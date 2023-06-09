@@ -2,17 +2,23 @@ package lambda
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/glbter/currency-ex/currency/exchanger/factory"
 	"github.com/glbter/currency-ex/pkg/serrors"
 	sqlc "github.com/glbter/currency-ex/pkg/sql"
 	pgx2 "github.com/glbter/currency-ex/pkg/sql/pgx"
+	cpolygon "github.com/glbter/currency-ex/polygon"
 	"github.com/glbter/currency-ex/stocks/repository/postgres"
 	"github.com/glbter/currency-ex/stocks/usecases"
 	"github.com/golang-jwt/jwt/v4"
+	polygon "github.com/polygon-io/client-go/rest"
+	"github.com/polygon-io/client-go/rest/models"
+	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 const (
@@ -160,5 +166,34 @@ func InitLambdaTickerHandler(ctx context.Context) (TickerHandler, error) {
 
 	return NewTickerHandler(
 		uc,
+	), nil
+}
+
+func InitLambdaDailyProcessor(ctx context.Context) (cpolygon.DailyDataProcessor, error) {
+	db, err := initDB(ctx)
+	if err != nil {
+		return cpolygon.DailyDataProcessor{}, err
+	}
+
+	key := os.Getenv("API_KEY")
+	if key == "" {
+		return cpolygon.DailyDataProcessor{}, errors.New("no env param API_KEY")
+	}
+
+	pc := polygon.NewWithClient(
+		key,
+		&http.Client{Timeout: time.Second * 2},
+	)
+
+	return cpolygon.NewDailyDataProcessor(
+		pc,
+		db,
+		postgres.NewTickerRepository(),
+		cpolygon.Config{
+			Multiplier: 4,
+			Timespan:   string(models.Hour),
+			From:       time.Date(2023, time.June, 01, 0, 0, 0, 0, time.UTC),
+			To:         time.Date(2023, time.June, 07, 0, 0, 0, 0, time.UTC),
+		},
 	), nil
 }
