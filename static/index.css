@@ -1,18 +1,12 @@
-/* Style the search box inside the navigation bar */
-.topnav input[type=text] {
+.topnav input[type=text], .topnav input[type=number]  {
     float: left;
     width: 60%;
-    /*padding: 6px;*/
-    /*border: none;*/
-    /*margin-top: 8px;*/
-    /*margin-right: 16px;*/
     font-size: 17px;
     max-width: 600px;
 }
 
-/* When the screen is less than 600px wide, stack the links and the search field vertically instead of horizontally */
 @media screen and (max-width: 600px) {
-    .topnav a, .topnav input[type=text] {
+    .topnav a, .topnav input[type=text], .topnav input[type=number] {
         float: none;
         display: block;
         text-align: left;
@@ -20,21 +14,10 @@
         margin: 0;
         padding: 14px;
     }
-    .topnav input[type=text] {
+    .topnav input[type=text], .topnav input[type=number]  {
         border: 1px solid #ccc;
     }
 }
-
-select{
-    border:none;
-    padding: 10px 20px;
-    border-radius:5px;
-}
-
-select:focus{
-    outline:none;
-}
-
 
 body {
     font-family: Arial, sans-serif;
@@ -43,7 +26,6 @@ body {
 }
 
 header {
-    /*display: flex;*/
     background-color: #333;
     color: #fff;
     padding: 20px;
@@ -56,7 +38,6 @@ header h2 {
     text-align: center;
 }
 
-
 header h3 {
     text-align: left;
     justify-content: left;
@@ -64,7 +45,6 @@ header h3 {
     float: left;
     display: block;
 }
-
 
 main {
     padding: 20px;
@@ -88,6 +68,7 @@ main {
 }
 
 .stock-panel input[type="text"],
+.stock-panel input[type="number"],
 .stock-panel button {
     margin: 10px 0;
     padding: 5px;
@@ -108,8 +89,7 @@ main {
 .stock-list {
     list-style-type: none;
     padding: 0;
-    width: 60%; /* Set the width of the stock list to 100% */
-}
+    width: 100%; }
 
 .stock-list li {
     display: flex;
@@ -128,13 +108,22 @@ main {
 }
 
 .trade-result {
+    display: none;
     text-align: center;
     font-size: 24px;
     background-color: cadetblue;
 }
 
 .trade-result-fail {
+    display: none;
     text-align: center;
     font-size: 24px;
     background-color: darksalmon;
+}
+
+#trade_menu,
+#portfolio_menu,
+#trade_menu,
+#main_menu{
+    display: none;
 }
