@@ -227,20 +227,37 @@ async function tradeTicker() {
                 action: action,
                 ticker_id: data[0].Ticker.ID
             })
-            .catch((err) => {
-                if (err.response && err.response.status === 401) {
-                    reAuthorize()
+            .then(() => {
+                if (action === "BUY") {
+                    showTradeSuccess("Придбано")
+                }
+
+                if (action === "SELL") {
+                    showTradeSuccess("Продано")
                 }
             })
+            .catch((err) => {
+                if (!(err.response)) {
+                    return
+                }
 
-        if (action === "BUY") {
-            showTradeSuccess("Придбано")
-        }
+                if (err.response.status === 401) {
+                    reAuthorize()
+                    return
+                }
 
-        if (action === "SELL") {
-            showTradeSuccess("Продано")
-        }
+                if (err.response.status === 400) {
+                    if (err.response.data) {
+                        showTradeError("Недостатньо активу на рахунку")
+                        return
+                    }
 
+                    showTradeError("Помилковий формат даних")
+                    return
+                }
+
+                showTradeError("Виникла помилка")
+            })
     } catch (e) {
         showTradeError("Виникла помилка")
     }
