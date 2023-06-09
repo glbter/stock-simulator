@@ -7,7 +7,7 @@ import (
 func NewDBCurrencyRater(
 	db sqlc.DB,
 ) (AllCurrencyRater, error) {
-	rater, err := SeriesExchangerFactory(ExchangerFactoryParams{Db: db})
+	rater, err := SeriesExchangerFactory(ExchangerFactoryParams{Db: db, Source: "NBU"})
 	if err != nil {
 		return AllCurrencyRater{}, err
 	}

@@ -33,13 +33,15 @@ func (r AllCurrencyRater) FindRates(ctx context.Context, params exchanger.Conver
 
 			date = date.Add(time.Hour * 24)
 		}
+
+		return res, nil
 	}
 
-	if params.ConvertFrom == exchanger.UAH {
-		return r.rater.FindRates(ctx, params.ConvertTo, params.Start, params.End)
+	if params.ConvertFrom != exchanger.UAH {
+		return r.rater.FindRates(ctx, params.ConvertFrom, params.Start, params.End)
 	}
 
-	rates, err := r.rater.FindRates(ctx, params.ConvertFrom, params.Start, params.End)
+	rates, err := r.rater.FindRates(ctx, params.ConvertTo, params.Start, params.End)
 	if err != nil {
 		return nil, fmt.Errorf("find rates: %w", err)
 	}
